@@ -1,0 +1,34 @@
+---
+// PrintCard.astro — a single print in the grid
+import type { Print } from '../content/types';
+
+interface Props {
+  print: Print;
+}
+const { print } = Astro.props;
+
+const formattedDate = new Date(print.date).toLocaleDateString('en-US', {
+  year: 'numeric', month: 'short', day: 'numeric',
+});
+---
+
+<a
+  href={print.model_url || '#'}
+  class="print-card"
+  data-title={print.title.toLowerCase()}
+  data-year={print.date.slice(0, 4)}
+  target={print.model_url ? '_blank' : undefined}
+  rel={print.model_url ? 'noopener noreferrer' : undefined}
+>
+  <div class="print-card-photo">
+    <img src={`/${print.photo}`} alt={print.title} loading="lazy" />
+    {print.model_url && <span class="print-card-hover-badge">View Model →</span>}
+  </div>
+  <div class="print-card-body">
+    <div class="print-card-title">{print.title}</div>
+    <div class="print-card-meta">
+      <span class="print-card-date">{formattedDate}</span>
+      <span class="print-card-source">{print.model_source}</span>
+    </div>
+  </div>
+</a>

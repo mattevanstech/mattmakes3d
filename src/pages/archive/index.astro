@@ -1,0 +1,265 @@
+---
+// archive/index.astro — full print history with search + grid/timeline toggle
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PrintCard from '../../components/PrintCard.astro';
+import type { Print } from '../../content/types';
+
+import { getPrints } from '../../lib/notion';
+const printsRaw = await getPrints();
+const prints = [...printsRaw].sort((a, b) => b.date.localeCompare(a.date));
+const printsJson = JSON.stringify(prints);
+---
+
+<BaseLayout
+  currentPage="archive"
+  title="Archive – MattMakes3D"
+  description="Full history of 3D prints by Matt Evans."
+>
+  <main>
+    <div class="fade-up fade-up-1">
+      <div class="hero" style="padding-bottom: 1rem;">
+        <div class="hero-eyebrow">Complete History</div>
+        <h1>Print<em>Archive</em></h1>
+      </div>
+    </div>
+
+    <div class="fade-up fade-up-2">
+
+      <!-- ── TOOLBAR ── -->
+      <div class="archive-toolbar">
+        <div class="search-wrap">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            type="text"
+            id="archive-search"
+            placeholder="Search by name or year…"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button id="search-clear" class="search-clear" aria-label="Clear search">✕</button>
+        </div>
+        <div class="view-toggle">
+          <button id="btn-grid" class="view-btn active" title="Grid view">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="currentColor">
+              <rect x="0" y="0" width="6" height="6"/><rect x="8" y="0" width="6" height="6"/>
+              <rect x="0" y="8" width="6" height="6"/><rect x="8" y="8" width="6" height="6"/>
+            </svg>
+            Grid
+          </button>
+          <button id="btn-timeline" class="view-btn" title="Timeline view">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="currentColor">
+              <rect x="0" y="1" width="14" height="2" rx="1"/>
+              <rect x="0" y="6" width="14" height="2" rx="1"/>
+              <rect x="0" y="11" width="14" height="2" rx="1"/>
+            </svg>
+            Timeline
+          </button>
+        </div>
+      </div>
+
+      <!-- ── RESULTS LABEL ── -->
+      <div id="results-label" class="section-label">{prints.length} Makes</div>
+
+      <!-- ── GRID VIEW ── -->
+      <div id="prints-grid">
+        {prints.map(print => <PrintCard print={print} />)}
+      </div>
+
+      <!-- ── TIMELINE VIEW (built by JS) ── -->
+      <div id="timeline-view" style="display:none;"></div>
+
+      <!-- ── NO RESULTS ── -->
+      <div id="no-results" class="no-results" style="display:none;">
+        <span class="no-results-icon">◈</span>
+        No makes found matching "<span id="no-results-term"></span>"
+      </div>
+
+    </div>
+  </main>
+</BaseLayout>
+
+<script is:inline define:vars={{ printsJson }}>
+(function () {
+  const MONTHS = [
+    'January','February','March','April','May','June',
+    'July','August','September','October','November','December'
+  ];
+
+  const prints       = JSON.parse(printsJson);
+  const searchInput  = document.getElementById('archive-search');
+  const searchClear  = document.getElementById('search-clear');
+  const resultsLabel = document.getElementById('results-label');
+  const gridView     = document.getElementById('prints-grid');
+  const timelineView = document.getElementById('timeline-view');
+  const noResults    = document.getElementById('no-results');
+  const noResultsTerm= document.getElementById('no-results-term');
+  const btnGrid      = document.getElementById('btn-grid');
+  const btnTimeline  = document.getElementById('btn-timeline');
+
+  let currentView  = 'grid';
+  let currentQuery = '';
+
+  // ── VIEW TOGGLE ──────────────────────────────────────────────────
+  btnGrid.addEventListener('click', function () {
+    if (currentView === 'grid') return;
+    currentView = 'grid';
+    btnGrid.classList.add('active');
+    btnTimeline.classList.remove('active');
+    render();
+  });
+
+  btnTimeline.addEventListener('click', function () {
+    if (currentView === 'timeline') return;
+    currentView = 'timeline';
+    btnTimeline.classList.add('active');
+    btnGrid.classList.remove('active');
+    render();
+  });
+
+  // ── SEARCH ───────────────────────────────────────────────────────
+  searchInput.addEventListener('input', function () {
+    currentQuery = searchInput.value.trim().toLowerCase();
+    searchClear.style.opacity        = currentQuery ? '1' : '0';
+    searchClear.style.pointerEvents  = currentQuery ? 'auto' : 'none';
+    render();
+  });
+
+  searchClear.addEventListener('click', function () {
+    searchInput.value   = '';
+    currentQuery        = '';
+    searchClear.style.opacity       = '0';
+    searchClear.style.pointerEvents = 'none';
+    searchInput.focus();
+    render();
+  });
+
+  // ── FILTER ───────────────────────────────────────────────────────
+  function filteredPrints() {
+    if (!currentQuery) return prints;
+    return prints.filter(function (p) {
+      return (
+        p.title.toLowerCase().includes(currentQuery) ||
+        p.date.slice(0, 4).includes(currentQuery)
+      );
+    });
+  }
+
+  // ── MAIN RENDER ──────────────────────────────────────────────────
+  function render() {
+    var filtered = filteredPrints();
+    var total    = filtered.length;
+
+    // Update results label
+    if (currentQuery) {
+      resultsLabel.textContent = total + ' result' + (total !== 1 ? 's' : '') + ' for "' + currentQuery + '"';
+    } else {
+      resultsLabel.textContent = prints.length + ' Makes';
+    }
+
+    // No results state
+    if (total === 0) {
+      gridView.style.display     = 'none';
+      timelineView.style.display = 'none';
+      noResults.style.display    = 'flex';
+      noResultsTerm.textContent  = searchInput.value.trim();
+      return;
+    }
+    noResults.style.display = 'none';
+
+    if (currentView === 'grid') {
+      gridView.style.display     = '';
+      timelineView.style.display = 'none';
+      renderGrid(filtered);
+    } else {
+      gridView.style.display     = 'none';
+      timelineView.style.display = 'block';
+      renderTimeline(filtered);
+    }
+  }
+
+  // ── GRID FILTER ──────────────────────────────────────────────────
+  function renderGrid(filtered) {
+    var cards = gridView.querySelectorAll('.print-card');
+    cards.forEach(function (card) {
+      var title = card.dataset.title;
+      var year  = card.dataset.year;
+      var match = filtered.some(function (p) {
+        return p.title.toLowerCase() === title && p.date.slice(0, 4) === year;
+      });
+      card.style.display = match ? '' : 'none';
+    });
+  }
+
+  // ── TIMELINE BUILDER ─────────────────────────────────────────────
+  function renderTimeline(filtered) {
+    // Group: year → month → [prints]
+    var grouped = {};
+    filtered.forEach(function (p) {
+      var d     = new Date(p.date + 'T12:00:00');
+      var year  = d.getFullYear();
+      var month = d.getMonth();
+      if (!grouped[year])        grouped[year] = {};
+      if (!grouped[year][month]) grouped[year][month] = [];
+      grouped[year][month].push(p);
+    });
+
+    var years = Object.keys(grouped).sort(function (a, b) { return b - a; });
+    var html  = '';
+
+    years.forEach(function (year) {
+      var months     = Object.keys(grouped[year]).sort(function (a, b) { return b - a; });
+      var yearTotal  = months.reduce(function (acc, m) { return acc + grouped[year][m].length; }, 0);
+
+      html += '<div class="timeline-year-group">';
+      html += '<div class="timeline-year-header">'
+            + '<span class="timeline-year-label">' + year + '</span>'
+            + '<span class="timeline-year-count">' + yearTotal + ' make' + (yearTotal !== 1 ? 's' : '') + '</span>'
+            + '</div>';
+
+      months.forEach(function (month) {
+        var entries = grouped[year][month];
+        html += '<div class="timeline-month-group">';
+        html += '<div class="timeline-month-header">' + MONTHS[month] + '</div>';
+        html += '<div class="timeline-entries">';
+
+        entries.forEach(function (p) {
+          var d       = new Date(p.date + 'T12:00:00');
+          var dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          var thumb   = p.photo
+            ? '<img src="/' + p.photo + '" alt="' + p.title.replace(/"/g, '&quot;') + '" loading="lazy" />'
+            : '<div class="timeline-thumb-placeholder">◈</div>';
+          var href    = p.model_url || '#';
+          var target  = p.model_url ? ' target="_blank" rel="noopener noreferrer"' : '';
+          var linkIcon = p.model_url
+            ? '<svg class="timeline-link-icon" width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M14 3h7v7h-2V6.41L10.41 15 9 13.59 17.59 5H14V3zM5 5h6V3H3v18h18v-8h-2v6H5V5z"/></svg>'
+            : '';
+
+          html += '<a href="' + href + '" class="timeline-entry"' + target + '>'
+                + '<div class="timeline-dot"></div>'
+                + '<div class="timeline-thumb">' + thumb + '</div>'
+                + '<div class="timeline-info">'
+                +   '<div class="timeline-title">' + p.title + '</div>'
+                +   '<div class="timeline-meta">'
+                +     '<span class="timeline-date">' + dateStr + '</span>'
+                +     '<span class="timeline-source">' + (p.model_source || '') + '</span>'
+                +   '</div>'
+                + '</div>'
+                + linkIcon
+                + '</a>';
+        });
+
+        html += '</div></div>'; // close .timeline-entries + .timeline-month-group
+      });
+
+      html += '</div>'; // close .timeline-year-group
+    });
+
+    timelineView.innerHTML = html;
+  }
+
+  // Initial render
+  render();
+})();
+</script>

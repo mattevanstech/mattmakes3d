@@ -1,0 +1,74 @@
+[
+  {
+    "title": "BB-9 Droid",
+    "date": "2026-02-22",
+    "photo": "makes/02-22-2026_bb-9-droid.jpg",
+    "model_url": "https://makerworld.com/en/models/2378411-bb-9-multi-part-details-without-ams-a1-a1-mini#profileId-2604151",
+    "model_source": "MakerWorld",
+    "featured": true
+  },
+  {
+    "title": "Baby Yoda",
+    "date": "2026-03-01",
+    "photo": "makes/03_01_2026_babyyoda.jpg",
+    "model_url": "https://makerworld.com/en/models/2218404-baby-yoda?from=search#profileId-2412298",
+    "model_source": "MakerWorld",
+    "featured": false
+  },
+  {
+    "title": "K-2SO",
+    "date": "2026-03-01",
+    "photo": "makes/03_01_2026_k2so.jpg",
+    "model_url": "",
+    "model_source": "MakerWorld",
+    "featured": false
+  },
+  {
+    "title": "Star Wars Logo",
+    "date": "2026-03-01",
+    "photo": "makes/03_01_2026_starwars-logo.jpg",
+    "model_url": "",
+    "model_source": "MakerWorld",
+    "featured": false
+  },
+  {
+    "title": "R2-D2",
+    "date": "2026-03-01",
+    "photo": "makes/03_01_2026_r2d2.jpg",
+    "model_url": "https://makerworld.com/en/models/2262141-r2-d2#profileId-2464993",
+    "model_source": "MakerWorld",
+    "featured": false
+  },
+  {
+    "title": "Yoda",
+    "date": "2026-03-01",
+    "photo": "makes/03_01_2026_yoda.jpg",
+    "model_url": "",
+    "model_source": "MakerWorld",
+    "featured": false
+  },
+  {
+    "title": "Yoda Skull",
+    "date": "2026-03-01",
+    "photo": "makes/03_01_2026_grogu-skull.jpg",
+    "model_url": "",
+    "model_source": "MakerWorld",
+    "featured": false
+  },
+  {
+    "title": "F-Bomb",
+    "date": "2025-12-05",
+    "photo": "makes/12_05_2025_f-bombs.jpg",
+    "model_url": "https://makerworld.com/en/models/1019328-f-bomb?from=search#profileId-1000306",
+    "model_source": "MakerWorld",
+    "featured": false
+  },
+  {
+    "title": "Master Yoda Bust – A Tribute to the Force",
+    "date": "2025-02-10",
+    "photo": "makes/01_27_2026_masteryoda.jpg",
+    "model_url": "https://makerworld.com/en/models/2143648-master-yoda-bust-a-tribute-to-the-force?from=search#profileId-2322058",
+    "model_source": "MakerWorld",
+    "featured": false
+  }
+]

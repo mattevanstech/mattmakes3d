@@ -1,0 +1,84 @@
+---
+// index.astro — home page: featured print + grid + queue sidebar
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PrintCard from '../components/PrintCard.astro';
+import QueuePanel from '../components/QueuePanel.astro';
+import type { Print, QueueItem } from '../content/types';
+
+// ── Data ─────────────────────────────────────────────────────────────────────
+import { getPrints, getQueue } from '../lib/notion';
+
+const prints = await getPrints();
+const queue = await getQueue();
+
+// Sort newest first
+const sorted = [...prints].sort((a, b) => b.date.localeCompare(a.date));
+const featured = sorted.find(p => p.featured) ?? sorted[0];
+const grid = sorted.filter(p => p !== featured);
+
+const featuredDate = new Date(featured.date).toLocaleDateString('en-US', {
+  year: 'numeric', month: 'long', day: 'numeric',
+});
+---
+
+<BaseLayout currentPage="home">
+
+  <!-- ── HERO BAND ─────────────────────────────────────────────────────── -->
+  <div class="hero-band">
+    <div class="hero-band-inner">
+      <div class="hero fade-up fade-up-1">
+        <div class="hero-eyebrow">Print Log</div>
+        <h1>Fresh Off<em>The Bed.</em></h1>
+        <p class="hero-sub">
+          A running record of what's coming off the printer. Models, makes,
+          and everything in between.
+        </p>
+      </div>
+      <QueuePanel items={queue} />
+    </div>
+  </div>
+
+  <!-- ── MAIN ──────────────────────────────────────────────────────────── -->
+  <main>
+
+    <!-- Featured -->
+    <div id="featured-container" class="fade-up fade-up-2">
+      <div class="section-label">Featured Make</div>
+      <div class="featured-card">
+        <div class="featured-photo">
+          <img src={`/${featured.photo}`} alt={featured.title} />
+        </div>
+        <div class="featured-info">
+          <div>
+            <div class="featured-title">{featured.title}</div>
+            <div class="featured-date">
+              <span>◈</span>{featuredDate}
+            </div>
+            <div class="ruler">
+              {Array.from({ length: 32 }).map((_, i) => (
+                <div class="ruler-tick" style={`height: ${i % 5 === 4 ? 14 : 8}px`}></div>
+              ))}
+            </div>
+          </div>
+          {featured.model_url && (
+            <a href={featured.model_url} class="model-link" target="_blank" rel="noopener noreferrer">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M14 3h7v7h-2V6.41L10.41 15 9 13.59 17.59 5H14V3zM5 5h6V3H3v18h18v-8h-2v6H5V5z"/>
+              </svg>
+              View on {featured.model_source}
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+
+    <!-- Grid -->
+    <div class="fade-up fade-up-3">
+      <div class="section-label">All Makes</div>
+      <div id="prints-grid">
+        {grid.map(print => <PrintCard print={print} />)}
+      </div>
+    </div>
+
+  </main>
+</BaseLayout>

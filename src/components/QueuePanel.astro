@@ -1,0 +1,26 @@
+---
+// QueuePanel.astro — sidebar showing what's coming up next
+import type { QueueItem } from '../content/types';
+
+interface Props {
+  items: QueueItem[];
+}
+const { items } = Astro.props;
+---
+
+<div class="queue-panel">
+  <div class="section-label">Print Queue</div>
+  {items.length === 0 ? (
+    <div class="queue-empty">Queue is empty</div>
+  ) : (
+    items.map((item) => (
+      <a href={item.url} class="queue-item" target="_blank" rel="noopener noreferrer">
+        <div class="queue-item-info">
+          <span class="queue-item-title">{item.title}</span>
+          <span class="queue-item-source">{item.source}</span>
+        </div>
+        <span class="queue-item-arrow">→</span>
+      </a>
+    ))
+  )}
+</div>
