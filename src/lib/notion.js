@@ -61,7 +61,7 @@ export async function getPrints() {
     if (photoFiles.length > 0) {
       const file = photoFiles[0];
       const rawUrl = file.type === "external" ? file.external.url : (file.file?.url ?? "");
-      photo = rawUrl.replace("https://makes.mattevanstech.com", "");
+      photo = rawUrl.replace("https://makes.mattevanstech.com/", "");
     }
 
     return {
