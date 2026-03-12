@@ -55,11 +55,13 @@ export async function getPrints() {
     const props = page.properties;
 
     // Extract photo URL — supports both external links and uploaded files
+    // Strip the makes.mattevanstech.com domain so images work on any host
     let photo = "";
     const photoFiles = props.Photo?.files ?? [];
     if (photoFiles.length > 0) {
       const file = photoFiles[0];
-      photo = file.type === "external" ? file.external.url : (file.file?.url ?? "");
+      const rawUrl = file.type === "external" ? file.external.url : (file.file?.url ?? "");
+      photo = rawUrl.replace("https://makes.mattevanstech.com", "");
     }
 
     return {
