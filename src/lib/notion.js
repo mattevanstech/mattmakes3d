@@ -4,7 +4,7 @@
  */
 
 const NOTION_TOKEN = import.meta.env.NOTION_TOKEN;
-const DATABASE_ID = "31737eb9-8530-801c-9992-000b30cfb467";
+const DATABASE_ID = "31737eb9-8530-8036-b514-e688248e45fc";
 const NOTION_VERSION = "2022-06-28";
 
 /**
