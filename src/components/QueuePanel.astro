@@ -4,8 +4,10 @@ import type { QueueItem } from '../content/types';
 
 interface Props {
   items: QueueItem[];
+  totalCount?: number;
 }
-const { items } = Astro.props;
+const { items, totalCount = items.length } = Astro.props;
+const hasMore = totalCount > items.length;
 ---
 
 <div class="queue-panel">
@@ -14,7 +16,7 @@ const { items } = Astro.props;
     <div class="queue-empty">Queue is empty</div>
   ) : (
     items.map((item) => (
-      <a href={item.url} class="queue-item" target="_blank" rel="noopener noreferrer">
+      <a href={item.url || '#'} class="queue-item" target={item.url ? '_blank' : undefined} rel={item.url ? 'noopener noreferrer' : undefined}>
         <div class="queue-item-info">
           <span class="queue-item-title">{item.title}</span>
           <span class="queue-item-source">{item.source}</span>
@@ -22,5 +24,10 @@ const { items } = Astro.props;
         <span class="queue-item-arrow">→</span>
       </a>
     ))
+  )}
+  {hasMore && (
+    <a href="/queue" class="queue-view-all">
+      View all {totalCount} in queue →
+    </a>
   )}
 </div>

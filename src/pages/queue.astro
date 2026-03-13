@@ -1,0 +1,169 @@
+---
+// queue.astro — full print queue page
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getQueue } from '../lib/notion';
+
+const queue = await getQueue();
+---
+
+<BaseLayout
+  title="Print Queue – MattMakes3D"
+  description="Everything currently queued up to print at MattMakes3D."
+  currentPage="home"
+>
+  <main>
+    <div class="fade-up fade-up-1">
+      <div class="hero" style="padding-bottom: 1rem;">
+        <div class="hero-eyebrow">Coming Soon</div>
+        <h1>Print Queue</h1>
+        <p class="hero-sub">Everything lined up and waiting for the bed.</p>
+      </div>
+    </div>
+
+    <div class="fade-up fade-up-2">
+      <div class="section-label">{queue.length} {queue.length === 1 ? 'Model' : 'Models'} Queued</div>
+
+      {queue.length === 0 ? (
+        <div class="queue-empty-state">
+          <div class="queue-empty-icon">🖨️</div>
+          <p>The queue is empty — nothing lined up yet.</p>
+          <a href="/" class="queue-back-link">← Back to latest prints</a>
+        </div>
+      ) : (
+        <div class="queue-full-list">
+          {queue.map((item, i) => (
+            <div class="queue-full-item">
+              <div class="queue-full-number">
+                {String(i + 1).padStart(2, '0')}
+              </div>
+              <div class="queue-full-info">
+                <div class="queue-full-title">{item.title}</div>
+                <div class="queue-full-source">{item.source}</div>
+              </div>
+              {item.url && (
+                <a href={item.url} class="queue-full-link" target="_blank" rel="noopener noreferrer">
+                  View Model →
+                </a>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div class="queue-footer">
+        <a href="/" class="queue-back-link">← Back to latest prints</a>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .queue-empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-dim);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+  }
+
+  .queue-empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  .queue-full-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+
+  .queue-full-item {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-2);
+    transition: background 0.2s;
+  }
+
+  .queue-full-item:last-child {
+    border-bottom: none;
+  }
+
+  .queue-full-item:hover {
+    background: var(--bg-3, rgba(255,255,255,0.03));
+  }
+
+  .queue-full-number {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--amber);
+    opacity: 0.6;
+    min-width: 2rem;
+    flex-shrink: 0;
+  }
+
+  .queue-full-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .queue-full-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .queue-full-source {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    margin-top: 0.2rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .queue-full-link {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--amber);
+    text-decoration: none;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: opacity 0.2s;
+  }
+
+  .queue-full-link:hover {
+    opacity: 0.7;
+  }
+
+  .queue-footer {
+    margin-top: 1rem;
+  }
+
+  .queue-back-link {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-decoration: none;
+    letter-spacing: 0.08em;
+    transition: color 0.2s;
+  }
+
+  .queue-back-link:hover {
+    color: var(--amber);
+  }
+</style>

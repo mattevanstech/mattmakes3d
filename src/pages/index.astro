@@ -10,6 +10,7 @@ import { getPrints, getQueue } from '../lib/notion';
 
 const prints = await getPrints();
 const queue = await getQueue();
+const queuePreview = queue.slice(0, 5);
 
 // Sort newest first
 const sorted = [...prints].sort((a, b) => b.date.localeCompare(a.date));
@@ -34,7 +35,7 @@ const featuredDate = new Date(featured.date).toLocaleDateString('en-US', {
           and everything in between.
         </p>
       </div>
-      <QueuePanel items={queue} />
+      <QueuePanel items={queuePreview} totalCount={queue.length} />
     </div>
   </div>
 
