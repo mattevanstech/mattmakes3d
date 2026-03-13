@@ -1001,6 +1001,7 @@
             border-bottom: 1px solid var(--border);
             z-index: 49;
             flex-direction: column;
+            align-items: flex-start;
             padding: 0.5rem 2rem 1.25rem;
         }
         .mobile-nav.open { display: flex; }
@@ -1013,6 +1014,7 @@
             color: var(--text-dim);
             text-decoration: none;
             padding: 0.9rem 0;
+            text-align: left;
             transition: color 0.2s;
         }
         .mobile-nav a:hover, .mobile-nav a.active { color: var(--amber); }
@@ -1142,9 +1144,11 @@
         .mobile-social {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 0.5rem;
             padding-top: 0.75rem;
             margin-top: 0.5rem;
+            width: 100%;
         }
 
         .mobile-social a {
