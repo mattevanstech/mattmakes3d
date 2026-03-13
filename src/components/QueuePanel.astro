@@ -11,7 +11,7 @@ const hasMore = totalCount > items.length;
 ---
 
 <div class="queue-panel">
-  <div class="section-label">Print Queue</div>
+  <a href="/queue" class="section-label section-label-link">Print Queue</a>
   {items.length === 0 ? (
     <div class="queue-empty">Queue is empty</div>
   ) : (
@@ -31,3 +31,15 @@ const hasMore = totalCount > items.length;
     </a>
   )}
 </div>
+
+<style>
+  .section-label-link {
+    text-decoration: none;
+    display: block;
+    transition: color 0.2s;
+  }
+
+  .section-label-link:hover {
+    color: var(--amber);
+  }
+</style>

@@ -272,7 +272,6 @@
         .queue-panel .section-label {
             padding: 0.9rem 1rem;
             margin: 0;
-            border-bottom: 1px solid var(--border);
             background: var(--bg-3);
         }
 
