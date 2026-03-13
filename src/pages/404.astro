@@ -1,0 +1,261 @@
+---
+// 404.astro — Wrong Filament error page
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Material Mismatch – MattMakes3D</title>
+  <link rel="icon" type="image/png" href="/assets/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --wrong: #b1ff00;
+      --wrong-dark: #7ab800;
+      --wrong-glow: rgba(177,255,0,0.15);
+      --bg: #0a1a00;
+      --text: #1a2e00;
+    }
+
+    body {
+      background-color: var(--wrong);
+      color: var(--text);
+      font-family: 'IBM Plex Mono', monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      overflow: hidden;
+    }
+
+    /* Scanline overlay for printer-screen effect */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.04) 2px,
+        rgba(0,0,0,0.04) 4px
+      );
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .container {
+      max-width: 640px;
+      width: 100%;
+      text-align: center;
+    }
+
+    /* Printer LCD screen */
+    .lcd {
+      background: var(--bg);
+      border: 3px solid var(--wrong-dark);
+      border-radius: 4px;
+      padding: 1.5rem 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 0 30px var(--wrong-glow), inset 0 0 20px rgba(0,0,0,0.5);
+      position: relative;
+    }
+
+    .lcd::before {
+      content: '● ● ●';
+      position: absolute;
+      top: 0.5rem;
+      left: 0.75rem;
+      font-size: 0.5rem;
+      color: var(--wrong-dark);
+      letter-spacing: 4px;
+    }
+
+    .lcd-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      color: var(--wrong-dark);
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    .error-code {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3.5rem, 12vw, 6rem);
+      color: var(--wrong);
+      line-height: 1;
+      letter-spacing: 0.05em;
+      text-shadow: 0 0 20px var(--wrong-glow), 3px 3px 0 var(--wrong-dark);
+      animation: flicker 4s infinite;
+    }
+
+    @keyframes flicker {
+      0%, 95%, 100% { opacity: 1; }
+      96% { opacity: 0.7; }
+      97% { opacity: 1; }
+      98% { opacity: 0.5; }
+      99% { opacity: 1; }
+    }
+
+    .error-sub {
+      font-size: 0.7rem;
+      color: var(--wrong-dark);
+      letter-spacing: 0.15em;
+      margin-top: 0.25rem;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--wrong-dark);
+      margin: 1.25rem 0;
+      opacity: 0.4;
+    }
+
+    .material-table {
+      width: 100%;
+      font-size: 0.7rem;
+      text-align: left;
+    }
+
+    .material-table tr td:first-child {
+      color: var(--wrong-dark);
+      padding-right: 1rem;
+      white-space: nowrap;
+    }
+
+    .material-table tr td:last-child {
+      color: var(--wrong);
+    }
+
+    .material-table .wrong {
+      color: var(--wrong) !important;
+      text-decoration: line-through;
+      opacity: 0.5;
+    }
+
+    .material-table .loaded {
+      color: #ff4444 !important;
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    .headline {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2rem, 8vw, 3.5rem);
+      line-height: 1.1;
+      letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+      color: var(--bg);
+    }
+
+    .body-text {
+      font-size: 0.78rem;
+      line-height: 1.7;
+      color: var(--text);
+      margin-bottom: 2rem;
+      opacity: 0.8;
+    }
+
+    .spool {
+      font-size: 4rem;
+      display: block;
+      margin-bottom: 1rem;
+      animation: spin 8s linear infinite;
+      filter: hue-rotate(0deg);
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .btn {
+      display: inline-block;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-decoration: none;
+      color: var(--wrong);
+      background: var(--bg);
+      border: 2px solid var(--wrong-dark);
+      padding: 0.85rem 2rem;
+      border-radius: 2px;
+      transition: all 0.2s;
+      box-shadow: 0 0 12px var(--wrong-glow);
+    }
+
+    .btn:hover {
+      background: var(--wrong);
+      color: var(--bg);
+      border-color: var(--wrong);
+      box-shadow: 0 0 24px var(--wrong-glow);
+    }
+
+    .footer-note {
+      margin-top: 2rem;
+      font-size: 0.6rem;
+      color: var(--wrong-dark);
+      letter-spacing: 0.1em;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Printer LCD screen -->
+    <div class="lcd">
+      <div class="lcd-label">MattMakes3D Printer Display</div>
+      <div class="error-code">E_404</div>
+      <div class="error-sub">MATERIAL MISMATCH DETECTED</div>
+      <hr class="divider" />
+      <table class="material-table">
+        <tr>
+          <td>EXPECTED:</td>
+          <td class="wrong">Dark Navy PLA</td>
+        </tr>
+        <tr>
+          <td>LOADED:</td>
+          <td class="loaded">Toxic Green PETG ⚠</td>
+        </tr>
+        <tr>
+          <td>LAYER:</td>
+          <td>404 of ???</td>
+        </tr>
+        <tr>
+          <td>STATUS:</td>
+          <td class="loaded">PRINT FAILED</td>
+        </tr>
+      </table>
+    </div>
+
+    <span class="spool">🧵</span>
+
+    <h1 class="headline">Wrong Filament<br />Loaded</h1>
+
+    <p class="body-text">
+      Someone swapped the spool mid-print.<br />
+      This page came out in completely the wrong material.<br />
+      Please remove the incorrect filament and try again.
+    </p>
+
+    <a href="/" class="btn">↩ Reload with correct filament</a>
+
+    <p class="footer-note">ERR_404 · MATTMAKES3D · PRINT JOB CANCELLED</p>
+
+  </div>
+</body>
+</html>
