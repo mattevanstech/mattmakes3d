@@ -51,7 +51,7 @@
             max-width: 1280px;
             margin: 0 auto;
             padding: 0 2rem;
-            height: 64px;
+            height: 80px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -66,7 +66,7 @@
 
         .logo-text {
             font-family: 'Bebas Neue', sans-serif;
-            font-size: 1.5rem;
+            font-size: 1.9rem;
             letter-spacing: 0.06em;
             color: var(--text-hi);
             transition: color 0.2s;
@@ -147,7 +147,7 @@
 
         nav a {
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.72rem;
+            font-size: 0.85rem;
             font-weight: 700;
             letter-spacing: 0.12em;
             text-transform: uppercase;
@@ -1059,14 +1059,14 @@
             max-width: 1280px;
             margin: 0 auto;
             padding: 0 2rem;
-            height: 44px;
+            height: 54px;
             display: flex;
             align-items: center;
             gap: 1rem;
         }
 
         .makerdeck-bar-logo {
-            height: 22px;
+            height: 30px;
             width: auto;
             display: block;
             flex-shrink: 0;
@@ -1074,7 +1074,7 @@
 
         .makerdeck-bar-divider {
             width: 1px;
-            height: 20px;
+            height: 26px;
             background: var(--border-hi);
             flex-shrink: 0;
         }
@@ -1091,7 +1091,7 @@
             align-items: center;
             gap: 0.4rem;
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.68rem;
+            font-size: 0.82rem;
             color: var(--text-dim);
             letter-spacing: 0.04em;
         }
@@ -1109,7 +1109,7 @@
 
         .makerdeck-bar-sep {
             color: var(--border-hi);
-            font-size: 0.7rem;
+            font-size: 0.82rem;
             padding: 0 0.2rem;
         }
 
@@ -1130,8 +1130,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 30px;
-            height: 30px;
+            width: 36px;
+            height: 36px;
             border-radius: 4px;
             color: var(--text-dim);
             transition: color 0.2s, background 0.2s;
@@ -1144,8 +1144,8 @@
         }
 
         .social-icons svg {
-            width: 16px;
-            height: 16px;
+            width: 20px;
+            height: 20px;
             fill: currentColor;
             flex-shrink: 0;
         }
