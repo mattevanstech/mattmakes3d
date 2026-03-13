@@ -48,6 +48,20 @@ const {
 
   <link rel="stylesheet" href="/styles/global.css" />
 
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json" is:inline set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "MattMakes3D",
+    "url": "https://mattmakes3d.com",
+    "description": description,
+    "author": {
+      "@type": "Person",
+      "name": "Matt Evans",
+      "url": "https://mattevanstech.com"
+    }
+  })} />
+
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-DYT0JD7HJM"></script>
   <script is:inline>
