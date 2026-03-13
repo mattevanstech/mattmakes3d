@@ -1008,7 +1008,7 @@
         .mobile-nav {
             display: none;
             position: fixed;
-            top: 64px;
+            top: 134px;
             left: 0;
             right: 0;
             background: rgba(13,33,55,0.98);
@@ -1017,7 +1017,7 @@
             z-index: 49;
             flex-direction: column;
             align-items: flex-start;
-            padding: 0.5rem 2rem 1.25rem;
+            padding: 1rem 2rem 1.5rem;
         }
         .mobile-nav.open { display: flex; }
         .mobile-nav > a {
@@ -1028,7 +1028,7 @@
             text-transform: uppercase;
             color: var(--text-dim);
             text-decoration: none;
-            padding: 0.9rem 0;
+            padding: 0.5rem 0;
             text-align: left;
             transition: color 0.2s;
         }
