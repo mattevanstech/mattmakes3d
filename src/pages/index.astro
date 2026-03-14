@@ -44,7 +44,10 @@ const grid = sorted.filter(p => !featuredItems.includes(p));
 
     <!-- Featured -->
     <div id="featured-container" class="fade-up fade-up-2">
-      <div class="section-label">Featured Makes</div>
+      <div class="section-heading">
+        <span class="section-heading-eyebrow">◈ Top Picks</span>
+        <h2 class="section-heading-title">Featured Makes</h2>
+      </div>
       <div class="featured-grid">
         {featuredItems.map((item) => {
           const itemDate = new Date(item.date).toLocaleDateString('en-US', {
@@ -86,7 +89,10 @@ const grid = sorted.filter(p => !featuredItems.includes(p));
 
     <!-- Grid -->
     <div class="fade-up fade-up-3">
-      <div class="section-label">All Makes</div>
+      <div class="section-heading">
+        <span class="section-heading-eyebrow">◈ The Collection</span>
+        <h2 class="section-heading-title">All Makes <span class="section-heading-count">{grid.length}</span></h2>
+      </div>
       <div id="prints-grid">
         {grid.map(print => <PrintCard print={print} />)}
       </div>
