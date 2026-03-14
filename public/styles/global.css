@@ -372,12 +372,18 @@
 
         .queue-view-all:hover { opacity: 0.7; }
 
-        /* ── FEATURED PRINT ── */
+        /* ── FEATURED PRINTS ── */
         #featured-container { margin-bottom: 4rem; }
 
-        .featured-card {
+        .featured-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .featured-card {
+            display: flex;
+            flex-direction: column;
             border: 1px solid var(--border);
             background: var(--bg-2);
             position: relative;
@@ -387,27 +393,12 @@
 
         .featured-card:hover { border-color: var(--amber-dim); }
 
-        .featured-card::before {
-            content: 'FEATURED MAKE';
-            position: absolute;
-            top: 1.2rem;
-            left: 1.2rem;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.6rem;
-            font-weight: 700;
-            letter-spacing: 0.2em;
-            color: var(--amber);
-            background: var(--bg);
-            border: 1px solid var(--amber-dim);
-            padding: 0.25rem 0.6rem;
-            z-index: 2;
-        }
-
         .featured-photo {
             position: relative;
             overflow: hidden;
             aspect-ratio: 4/3;
             background: var(--bg-3);
+            flex-shrink: 0;
         }
 
         .featured-photo img {
@@ -422,6 +413,24 @@
         .featured-card:hover .featured-photo img {
             transform: scale(1.03);
             filter: saturate(1) contrast(1.05);
+        }
+
+        /* Featured badge on photo */
+        .featured-badge {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--amber);
+            background: rgba(13, 33, 55, 0.85);
+            border: 1px solid var(--amber-dim);
+            padding: 0.25rem 0.6rem;
+            z-index: 2;
+            backdrop-filter: blur(4px);
         }
 
         .photo-placeholder {
@@ -465,20 +474,21 @@
         }
 
         .featured-info {
-            padding: 3.5rem 2.5rem 2.5rem;
+            padding: 1.75rem 2rem 2rem;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            border-left: 1px solid var(--border);
+            flex: 1;
+            border-top: 1px solid var(--border);
         }
 
         .featured-title {
             font-family: 'Bebas Neue', sans-serif;
-            font-size: 2.8rem;
+            font-size: 2.2rem;
             line-height: 1;
             letter-spacing: 0.03em;
             color: var(--text-hi);
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
         }
 
         .featured-date {
@@ -486,7 +496,7 @@
             font-size: 0.7rem;
             color: var(--text-dim);
             letter-spacing: 0.1em;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
 
         .featured-date span {
@@ -498,7 +508,7 @@
         .ruler {
             display: flex;
             gap: 3px;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
         .ruler-tick {
             width: 2px;
@@ -1096,8 +1106,8 @@
         @media (max-width: 768px) {
             nav { display: none; }
             .hamburger { display: flex; }
-            .featured-card { grid-template-columns: 1fr; }
-            .featured-info { border-left: none; border-top: 1px solid var(--border); padding: 1.5rem; }
+            .featured-grid { grid-template-columns: 1fr; }
+            .featured-info { padding: 1.25rem 1.25rem 1.5rem; }
             h1 { font-size: 3rem; }
             .footer-inner { flex-direction: column; align-items: flex-start; height: auto; padding: 1.5rem 2rem; gap: 1.25rem; }
             .footer-tagline { display: none; }

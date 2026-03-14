@@ -14,12 +14,12 @@ const queuePreview = queue.slice(0, 5);
 
 // Sort newest first
 const sorted = [...prints].sort((a, b) => b.date.localeCompare(a.date));
-const featured = sorted.find(p => p.featured) ?? sorted[0];
-const grid = sorted.filter(p => p !== featured);
 
-const featuredDate = new Date(featured.date).toLocaleDateString('en-US', {
-  year: 'numeric', month: 'long', day: 'numeric',
-});
+// Pick up to 2 featured items; backfill with newest if needed
+const markedFeatured = sorted.filter(p => p.featured);
+const backfill = sorted.filter(p => !p.featured);
+const featuredItems = [...markedFeatured, ...backfill].slice(0, 2);
+const grid = sorted.filter(p => !featuredItems.includes(p));
 ---
 
 <BaseLayout currentPage="home">
@@ -44,32 +44,43 @@ const featuredDate = new Date(featured.date).toLocaleDateString('en-US', {
 
     <!-- Featured -->
     <div id="featured-container" class="fade-up fade-up-2">
-      <div class="section-label">Featured Make</div>
-      <div class="featured-card">
-        <div class="featured-photo">
-          <img src={`/${featured.photo}`} alt={featured.title} />
-        </div>
-        <div class="featured-info">
-          <div>
-            <div class="featured-title">{featured.title}</div>
-            <div class="featured-date">
-              <span>◈</span>{featuredDate}
+      <div class="section-label">Featured Makes</div>
+      <div class="featured-grid">
+        {featuredItems.map((item) => {
+          const itemDate = new Date(item.date).toLocaleDateString('en-US', {
+            year: 'numeric', month: 'long', day: 'numeric',
+          });
+          return (
+            <div class="featured-card">
+              <div class="featured-photo">
+                {item.photo
+                  ? <img src={`/${item.photo}`} alt={item.title} />
+                  : <div class="photo-placeholder"><span>NO PHOTO</span></div>
+                }
+                <div class="featured-badge">Featured</div>
+              </div>
+              <div class="featured-info">
+                <div>
+                  <div class="featured-title">{item.title}</div>
+                  <div class="featured-date"><span>◈</span>{itemDate}</div>
+                  <div class="ruler">
+                    {Array.from({ length: 24 }).map((_, i) => (
+                      <div class="ruler-tick" style={`height: ${i % 5 === 4 ? 14 : 8}px`}></div>
+                    ))}
+                  </div>
+                </div>
+                {item.model_url && (
+                  <a href={item.model_url} class="model-link" target="_blank" rel="noopener noreferrer">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M14 3h7v7h-2V6.41L10.41 15 9 13.59 17.59 5H14V3zM5 5h6V3H3v18h18v-8h-2v6H5V5z"/>
+                    </svg>
+                    View on {item.model_source}
+                  </a>
+                )}
+              </div>
             </div>
-            <div class="ruler">
-              {Array.from({ length: 32 }).map((_, i) => (
-                <div class="ruler-tick" style={`height: ${i % 5 === 4 ? 14 : 8}px`}></div>
-              ))}
-            </div>
-          </div>
-          {featured.model_url && (
-            <a href={featured.model_url} class="model-link" target="_blank" rel="noopener noreferrer">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M14 3h7v7h-2V6.41L10.41 15 9 13.59 17.59 5H14V3zM5 5h6V3H3v18h18v-8h-2v6H5V5z"/>
-              </svg>
-              View on {featured.model_source}
-            </a>
-          )}
-        </div>
+          );
+        })}
       </div>
     </div>
 
