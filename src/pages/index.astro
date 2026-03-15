@@ -57,7 +57,7 @@ const grid = sorted.filter(p => !featuredItems.includes(p));
             <div class="featured-card">
               <div class="featured-photo">
                 {item.photo
-                  ? <img src={`/${item.photo}`} alt={item.title} />
+                  ? <img src={item.photo} alt={item.title} />
                   : <div class="photo-placeholder"><span>NO PHOTO</span></div>
                 }
                 <div class="featured-badge">Featured</div>

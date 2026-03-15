@@ -21,7 +21,7 @@ const formattedDate = new Date(print.date).toLocaleDateString('en-US', {
   rel={print.model_url ? 'noopener noreferrer' : undefined}
 >
   <div class="print-card-photo">
-    <img src={`/${print.photo}`} alt={print.title} loading="lazy" />
+    <img src={print.photo} alt={print.title} loading="lazy" />
     {print.model_url && <span class="print-card-hover-badge">View Model →</span>}
   </div>
   <div class="print-card-body">

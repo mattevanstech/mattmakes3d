@@ -54,14 +54,19 @@ export async function getPrints() {
   return data.results.map((page) => {
     const props = page.properties;
 
-    // Extract photo URL — supports both external links and uploaded files
-    // Strip the makes.mattevanstech.com domain so images work on any host
+    // Extract photo URL — supports external links (GitHub CDN, etc.) and legacy relative paths
+    // If the URL is from the old makes.mattevanstech.com host, convert to a relative path.
+    // All other URLs (GitHub CDN, etc.) are kept as full absolute URLs.
     let photo = "";
     const photoFiles = props.Photo?.files ?? [];
     if (photoFiles.length > 0) {
       const file = photoFiles[0];
       const rawUrl = file.type === "external" ? file.external.url : (file.file?.url ?? "");
-      photo = rawUrl.replace("https://makes.mattevanstech.com/", "");
+      if (rawUrl.startsWith("https://makes.mattevanstech.com/")) {
+        photo = rawUrl.replace("https://makes.mattevanstech.com/", "/");
+      } else {
+        photo = rawUrl; // full external URL (GitHub CDN, etc.)
+      }
     }
 
     return {
