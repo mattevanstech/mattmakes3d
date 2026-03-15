@@ -10,7 +10,7 @@ import { getPrints, getQueue } from '../lib/notion';
 
 const prints = await getPrints();
 const queue = await getQueue();
-const queuePreview = queue.slice(0, 5);
+const queuePreview = queue.slice(0, 3);
 
 // Sort newest first
 const sorted = [...prints].sort((a, b) => b.date.localeCompare(a.date));

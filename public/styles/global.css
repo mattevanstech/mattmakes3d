@@ -1336,7 +1336,7 @@
         .mobile-nav.open { display: flex; }
         .mobile-nav > a {
             font-family: 'Bebas Neue', sans-serif;
-            font-size: 3.2rem;
+            font-size: 2rem;
             letter-spacing: 0.05em;
             color: var(--text-hi);
             text-decoration: none;
