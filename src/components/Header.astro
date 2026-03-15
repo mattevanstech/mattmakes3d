@@ -67,25 +67,50 @@ const { currentPage = 'home' } = Astro.props;
 </nav>
 
 <script>
+  // The header uses transition:persist so this script runs ONCE on initial load.
+  // The mobile-nav is NOT persisted, so it gets replaced on each navigation —
+  // we must re-query it fresh each time instead of caching it.
+
   const btn = document.getElementById('hamburger');
-  const nav = document.getElementById('mobile-nav');
+
+  function getNav() {
+    return document.getElementById('mobile-nav');
+  }
 
   function closeMenu() {
     btn?.classList.remove('open');
-    nav?.classList.remove('open');
+    getNav()?.classList.remove('open');
+    document.body.style.overflow = '';
   }
 
-  // Toggle open/close
+  function openMenu() {
+    btn?.classList.add('open');
+    getNav()?.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  // Toggle hamburger
   btn?.addEventListener('click', () => {
-    btn.classList.toggle('open');
-    nav?.classList.toggle('open');
+    if (btn.classList.contains('open')) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
   });
 
-  // Close menu when any mobile nav link is tapped
-  nav?.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', closeMenu);
-  });
+  // After each navigation, re-attach click listeners to the new nav links
+  function attachNavLinks() {
+    getNav()?.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', closeMenu);
+    });
+  }
+  document.addEventListener('astro:page-load', attachNavLinks);
 
-  // Close menu automatically before every ViewTransitions page navigation
+  // Close before every ViewTransitions page swap
   document.addEventListener('astro:before-preparation', closeMenu);
+
+  // Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeMenu();
+  });
 </script>

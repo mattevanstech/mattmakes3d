@@ -34,11 +34,10 @@
         html {
             scroll-behavior: smooth;
             overscroll-behavior-y: none;
-            background-color: #0d2137; /* fills iOS/Android status bar area */
         }
 
         body {
-            padding-top: calc(134px + env(safe-area-inset-top));
+            padding-top: 134px;
             overscroll-behavior-y: none;
             background-color: var(--bg);
             color: var(--text);
@@ -65,10 +64,9 @@
             top: 0;
             left: 0;
             right: 0;
-            z-index: 50;
+            z-index: 150; /* above mobile-nav overlay (140) so hamburger/X stays visible */
             background: #0d2137;
             border-bottom: 1px solid var(--border);
-            padding-top: env(safe-area-inset-top);
         }
 
         .header-inner {
@@ -1307,7 +1305,8 @@
             border: none;
             cursor: pointer;
             padding: 4px;
-            z-index: 60;
+            z-index: 160; /* must sit above mobile-nav overlay (140) */
+            position: relative;
         }
         .hamburger span {
             display: block;
@@ -1321,36 +1320,47 @@
         .hamburger.open span:nth-child(2) { opacity: 0; width: 0; }
         .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-        /* ── MOBILE NAV ── */
+        /* ── MOBILE NAV (fullscreen overlay) ── */
         .mobile-nav {
             display: none;
             position: fixed;
-            top: calc(134px + env(safe-area-inset-top));
-            left: 0;
-            right: 0;
-            background: #0a1e33;
-            border-bottom: 1px solid var(--border);
-            z-index: 49;
+            inset: 0;
+            z-index: 140;
+            background: #0d2137;
             flex-direction: column;
-            align-items: flex-start;
-            padding: 1rem 2rem 1.5rem;
+            align-items: center;
+            justify-content: center;
             gap: 0;
+            padding: 2rem;
         }
         .mobile-nav.open { display: flex; }
         .mobile-nav > a {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.8rem;
-            font-weight: 700;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: var(--text-dim);
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 3.2rem;
+            letter-spacing: 0.05em;
+            color: var(--text-hi);
             text-decoration: none;
             padding: 0.6rem 0;
             width: 100%;
-            text-align: left;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
             transition: color 0.2s;
         }
+        .mobile-nav > a:first-of-type { border-top: 1px solid var(--border); }
         .mobile-nav a:hover, .mobile-nav a.active { color: var(--amber); }
+        .mobile-social {
+            margin-top: 2.5rem;
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+        .mobile-social a {
+            color: var(--text-dim);
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        .mobile-social a:hover { color: var(--amber); }
 
         /* ── RESPONSIVE ── */
         @media (max-width: 1024px) {
@@ -1371,7 +1381,7 @@
         /* ── MAKERDECK BAR ── */
         .makerdeck-bar {
             position: fixed;
-            top: calc(80px + env(safe-area-inset-top));
+            top: 80px;
             left: 0;
             right: 0;
             z-index: 49;
