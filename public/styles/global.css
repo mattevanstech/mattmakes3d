@@ -61,12 +61,14 @@
             background: rgba(13,33,55,0.95);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
+            padding-top: env(safe-area-inset-top);
         }
 
         .header-inner {
             max-width: 1280px;
             margin: 0 auto;
             padding: 0 2rem;
+            overflow: visible;
             height: 80px;
             display: flex;
             align-items: center;
@@ -1142,7 +1144,7 @@
         .mobile-nav {
             display: none;
             position: fixed;
-            top: 134px;
+            top: calc(134px + env(safe-area-inset-top));
             left: 0;
             right: 0;
             background: rgba(13,33,55,0.98);
