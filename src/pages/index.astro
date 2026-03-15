@@ -19,7 +19,9 @@ const sorted = [...prints].sort((a, b) => b.date.localeCompare(a.date));
 const markedFeatured = sorted.filter(p => p.featured);
 const backfill = sorted.filter(p => !p.featured);
 const featuredItems = [...markedFeatured, ...backfill].slice(0, 2);
-const grid = sorted.filter(p => !featuredItems.includes(p));
+const allGrid = sorted.filter(p => !featuredItems.includes(p));
+const grid = allGrid.slice(0, 12);
+const hasMoreMakes = allGrid.length > 12;
 ---
 
 <BaseLayout currentPage="home">
@@ -96,6 +98,13 @@ const grid = sorted.filter(p => !featuredItems.includes(p));
       <div id="prints-grid">
         {grid.map(print => <PrintCard print={print} />)}
       </div>
+      {hasMoreMakes && (
+        <div class="view-all-wrap">
+          <a href="/archive" class="view-all-btn">
+            View All {allGrid.length + featuredItems.length} Makes →
+          </a>
+        </div>
+      )}
     </div>
 
   </main>

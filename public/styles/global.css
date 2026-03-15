@@ -416,6 +416,33 @@
 
         .queue-view-all:hover { opacity: 0.7; }
 
+        /* ── VIEW ALL BUTTON ── */
+        .view-all-wrap {
+            display: flex;
+            justify-content: center;
+            margin-top: 3rem;
+        }
+
+        .view-all-btn {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--text-hi);
+            text-decoration: none;
+            border: 1px solid var(--border);
+            padding: 0.85rem 2.5rem;
+            background: var(--bg-2);
+            transition: border-color 0.2s, color 0.2s, background 0.2s;
+        }
+
+        .view-all-btn:hover {
+            border-color: var(--amber);
+            color: var(--amber);
+            background: var(--amber-glow);
+        }
+
         /* ── FEATURED PRINTS ── */
         #featured-container { margin-bottom: 4rem; }
 
