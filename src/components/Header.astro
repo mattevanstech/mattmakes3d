@@ -6,7 +6,7 @@ interface Props {
 const { currentPage = 'home' } = Astro.props;
 ---
 
-<header>
+<header transition:persist>
   <div class="header-inner">
     <a href="/" class="logo">
       <img src="/assets/logo.svg" alt="MattMakes3D logo" height="44" style="width:auto;display:block;" />

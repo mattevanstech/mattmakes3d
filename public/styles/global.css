@@ -31,10 +31,14 @@
             --amber-glow:rgba(224,123,42,0.15);
         }
 
-        html { scroll-behavior: smooth; }
+        html {
+            scroll-behavior: smooth;
+            overscroll-behavior-y: none;
+        }
 
         body {
             padding-top: 134px;
+            overscroll-behavior-y: none;
             background-color: var(--bg);
             color: var(--text);
             font-family: 'Barlow', sans-serif;
