@@ -37,7 +37,7 @@
         }
 
         body {
-            padding-top: 134px;
+            padding-top: calc(134px + env(safe-area-inset-top));
             overscroll-behavior-y: none;
             background-color: var(--bg);
             color: var(--text);
@@ -67,6 +67,7 @@
             z-index: 50;
             background: #0d2137;
             border-bottom: 1px solid var(--border);
+            padding-top: env(safe-area-inset-top);
         }
 
         .header-inner {
@@ -1147,7 +1148,7 @@
         .mobile-nav {
             display: none;
             position: fixed;
-            top: 134px;
+            top: calc(134px + env(safe-area-inset-top));
             left: 0;
             right: 0;
             background: #0a1e33;
@@ -1193,7 +1194,7 @@
         /* ── MAKERDECK BAR ── */
         .makerdeck-bar {
             position: fixed;
-            top: 80px;
+            top: calc(80px + env(safe-area-inset-top));
             left: 0;
             right: 0;
             z-index: 49;
