@@ -10,19 +10,27 @@ const { print } = Astro.props;
 const formattedDate = new Date(print.date).toLocaleDateString('en-US', {
   year: 'numeric', month: 'short', day: 'numeric',
 });
+
+const slug = print.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 ---
 
-<a
-  href={print.model_url || '#'}
+<div
   class="print-card"
-  data-title={print.title.toLowerCase()}
+  data-lightbox
+  data-id={slug}
+  data-title={print.title}
+  data-photo={print.photo}
+  data-date={print.date}
+  data-model-url={print.model_url}
+  data-model-source={print.model_source}
+  tabindex="0"
+  role="button"
+  data-title-lower={print.title.toLowerCase()}
   data-year={print.date.slice(0, 4)}
-  target={print.model_url ? '_blank' : undefined}
-  rel={print.model_url ? 'noopener noreferrer' : undefined}
 >
   <div class="print-card-photo">
     <img src={print.photo} alt={print.title} loading="lazy" />
-    {print.model_url && <span class="print-card-hover-badge">View Model →</span>}
+    <span class="print-card-hover-badge">View Details →</span>
   </div>
   <div class="print-card-body">
     <div class="print-card-title">{print.title}</div>
@@ -31,4 +39,4 @@ const formattedDate = new Date(print.date).toLocaleDateString('en-US', {
       <span class="print-card-source">{print.model_source}</span>
     </div>
   </div>
-</a>
+</div>

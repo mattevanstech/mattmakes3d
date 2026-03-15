@@ -1107,6 +1107,182 @@
             letter-spacing: 0.08em;
         }
 
+        /* ── LIGHTBOX ── */
+        .lightbox {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .lightbox.is-open { display: flex; }
+
+        .lightbox-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.88);
+            cursor: pointer;
+        }
+
+        .lightbox-panel {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            max-width: 1000px;
+            width: 100%;
+            max-height: 90vh;
+            background: var(--bg-2);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            z-index: 10;
+            background: rgba(0,0,0,0.6);
+            border: 1px solid var(--border);
+            color: var(--text-hi);
+            width: 36px;
+            height: 36px;
+            border-radius: 2px;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .lightbox-close:hover { background: var(--amber-glow); border-color: var(--amber); color: var(--amber); }
+
+        .lightbox-photo {
+            position: relative;
+            overflow: hidden;
+            background: var(--bg-3);
+            aspect-ratio: 4/3;
+        }
+
+        .lightbox-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .lightbox-info {
+            padding: 2.5rem 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            overflow-y: auto;
+            border-left: 1px solid var(--border);
+        }
+
+        .lightbox-eyebrow {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--amber);
+        }
+
+        .lightbox-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.2rem;
+            line-height: 1;
+            letter-spacing: 0.03em;
+            color: var(--text-hi);
+        }
+
+        .lightbox-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            padding: 1rem 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .lightbox-meta-row {
+            display: flex;
+            gap: 1rem;
+            align-items: baseline;
+        }
+
+        .lightbox-meta-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            min-width: 60px;
+        }
+
+        .lightbox-meta-value {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text);
+        }
+
+        .lightbox-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: auto;
+        }
+
+        .lightbox-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            text-decoration: none;
+            border: 1px solid;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, border-color 0.2s;
+        }
+
+        .lightbox-btn-primary {
+            background: var(--amber);
+            color: var(--bg);
+            border-color: var(--amber);
+        }
+        .lightbox-btn-primary:hover { background: #f0a060; border-color: #f0a060; }
+        .lightbox-btn-primary.hidden { display: none; }
+
+        .lightbox-btn-secondary {
+            background: transparent;
+            color: var(--text-dim);
+            border-color: var(--border);
+        }
+        .lightbox-btn-secondary:hover { border-color: var(--amber); color: var(--amber); background: var(--amber-glow); }
+
+        /* Print card cursor */
+        [data-lightbox] { cursor: pointer; }
+
+        @media (max-width: 768px) {
+            .lightbox-panel {
+                grid-template-columns: 1fr;
+                max-height: 92vh;
+                overflow-y: auto;
+            }
+            .lightbox-photo { aspect-ratio: 4/3; }
+            .lightbox-info { border-left: none; border-top: 1px solid var(--border); padding: 1.5rem; }
+            .lightbox-title { font-size: 1.8rem; }
+        }
+
         /* ── ANIMATIONS ── */
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(16px); }

@@ -187,10 +187,10 @@ const printsJson = JSON.stringify(prints);
   function renderGrid(filtered) {
     var cards = gridView.querySelectorAll('.print-card');
     cards.forEach(function (card) {
-      var title = card.dataset.title;
-      var year  = card.dataset.year;
+      var titleLower = (card.dataset.titleLower || card.dataset.title || '').toLowerCase();
+      var year       = card.dataset.year;
       var match = filtered.some(function (p) {
-        return p.title.toLowerCase() === title && p.date.slice(0, 4) === year;
+        return p.title.toLowerCase() === titleLower && p.date.slice(0, 4) === year;
       });
       card.style.display = match ? '' : 'none';
     });
