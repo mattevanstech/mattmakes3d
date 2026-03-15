@@ -34,6 +34,7 @@
         html { scroll-behavior: smooth; }
 
         body {
+            padding-top: 134px;
             background-color: var(--bg);
             color: var(--text);
             font-family: 'Barlow', sans-serif;
@@ -55,8 +56,10 @@
 
         /* ── HEADER ── */
         header {
-            position: sticky;
+            position: fixed;
             top: 0;
+            left: 0;
+            right: 0;
             z-index: 50;
             background: #0d2137;
             border-bottom: 1px solid var(--border);
@@ -1185,6 +1188,11 @@
 
         /* ── MAKERDECK BAR ── */
         .makerdeck-bar {
+            position: fixed;
+            top: 80px;
+            left: 0;
+            right: 0;
+            z-index: 49;
             background: var(--bg-2);
             border-bottom: 1px solid var(--border);
         }
