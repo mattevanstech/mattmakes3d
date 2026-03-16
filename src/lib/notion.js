@@ -3,6 +3,14 @@
  * Uses the Notion REST API directly (no SDK required).
  */
 
+/**
+ * Convert a print title to a URL-safe slug.
+ * Used consistently across all pages and components.
+ */
+export function toSlug(title) {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
 const NOTION_TOKEN = import.meta.env.NOTION_TOKEN;
 const DATABASE_ID = "31737eb9-8530-8036-b514-e688248e45fc";
 const NOTION_VERSION = "2022-06-28";
@@ -69,9 +77,11 @@ export async function getPrints() {
       }
     }
 
+    const title = props["Model Name"]?.title?.[0]?.plain_text ?? "";
     return {
       id: page.id,
-      title: props["Model Name"]?.title?.[0]?.plain_text ?? "",
+      title,
+      slug: toSlug(title),
       date: props["Print Date"]?.date?.start ?? "",
       photo,
       model_url: props["Model Source URL"]?.url ?? "",

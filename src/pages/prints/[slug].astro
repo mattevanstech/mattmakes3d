@@ -1,0 +1,243 @@
+---
+// prints/[slug].astro — individual print page with per-print OG tags
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getPrints } from '../../lib/notion';
+
+export async function getStaticPaths() {
+  const prints = await getPrints();
+  return prints.map(print => ({
+    params: { slug: print.slug },
+    props: { print },
+  }));
+}
+
+const { print } = Astro.props;
+
+const formattedDate = print.date
+  ? new Date(print.date).toLocaleDateString('en-US', {
+      year: 'numeric', month: 'long', day: 'numeric',
+    })
+  : '';
+
+const ogDescription = [
+  print.title,
+  formattedDate ? `Printed ${formattedDate}` : null,
+  print.model_source ? `Model from ${print.model_source}` : null,
+  'See all my 3D prints at MattMakes3D.com.',
+].filter(Boolean).join(' · ');
+
+// Use the print photo as the OG image if it's an absolute URL
+const ogImage = print.photo?.startsWith('http')
+  ? print.photo
+  : 'https://mattmakes3d.com/assets/og-image.png';
+---
+
+<BaseLayout
+  title={`${print.title} — MattMakes3D`}
+  description={ogDescription}
+  ogImage={ogImage}
+>
+  <main class="print-page">
+    <div class="print-page-inner">
+
+      <a href="/" class="print-page-back">← Back to Latest Prints</a>
+
+      <div class="print-page-card">
+        <div class="print-page-photo">
+          {print.photo && (
+            <img src={print.photo} alt={print.title} />
+          )}
+        </div>
+
+        <div class="print-page-info">
+          <div class="print-page-eyebrow">◈ Print Details</div>
+          <h1 class="print-page-title">{print.title}</h1>
+
+          <div class="print-page-meta">
+            {formattedDate && (
+              <div class="print-page-meta-row">
+                <span class="print-page-meta-label">Printed</span>
+                <span class="print-page-meta-value">{formattedDate}</span>
+              </div>
+            )}
+            {print.model_source && (
+              <div class="print-page-meta-row">
+                <span class="print-page-meta-label">Source</span>
+                <span class="print-page-meta-value">{print.model_source}</span>
+              </div>
+            )}
+          </div>
+
+          <div class="print-page-actions">
+            {print.model_url && (
+              <a
+                href={print.model_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="print-page-btn print-page-btn-primary"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M14 3h7v7h-2V6.41L10.41 15 9 13.59 17.59 5H14V3zM5 5h6V3H3v18h18v-8h-2v6H5V5z"/>
+                </svg>
+                View Model
+              </a>
+            )}
+            <a href="/" class="print-page-btn print-page-btn-secondary">
+              All Prints
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .print-page {
+    min-height: calc(100vh - 134px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.5rem;
+  }
+
+  .print-page-inner {
+    width: 100%;
+    max-width: 960px;
+  }
+
+  .print-page-back {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    text-decoration: none;
+    margin-bottom: 2rem;
+    transition: color 0.2s;
+  }
+  .print-page-back:hover { color: var(--amber); }
+
+  .print-page-card {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .print-page-photo {
+    aspect-ratio: 1;
+    overflow: hidden;
+    background: var(--bg-3);
+  }
+  .print-page-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .print-page-info {
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-left: 1px solid var(--border);
+  }
+
+  .print-page-eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 0.75rem;
+  }
+
+  .print-page-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3rem;
+    letter-spacing: 0.04em;
+    color: var(--text-hi);
+    line-height: 1.05;
+    margin-bottom: 1.75rem;
+  }
+
+  .print-page-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .print-page-meta-row {
+    display: flex;
+    gap: 1rem;
+    align-items: baseline;
+  }
+
+  .print-page-meta-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    min-width: 60px;
+  }
+
+  .print-page-meta-value {
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.9rem;
+    color: var(--text);
+  }
+
+  .print-page-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .print-page-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1.25rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 3px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+  }
+
+  .print-page-btn-primary {
+    background: var(--amber);
+    border-color: var(--amber);
+    color: #0d2137;
+  }
+  .print-page-btn-primary:hover { background: #f0a060; border-color: #f0a060; }
+
+  .print-page-btn-secondary {
+    background: transparent;
+    border-color: var(--border-hi);
+    color: var(--text);
+  }
+  .print-page-btn-secondary:hover { border-color: var(--amber); color: var(--amber); }
+
+  @media (max-width: 640px) {
+    .print-page-card { grid-template-columns: 1fr; }
+    .print-page-info { border-left: none; border-top: 1px solid var(--border); padding: 1.5rem; }
+    .print-page-title { font-size: 2.2rem; }
+  }
+</style>
