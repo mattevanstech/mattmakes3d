@@ -1047,7 +1047,7 @@
         .footer-left {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 2rem;
         }
 
         .footer-logo {
@@ -1074,8 +1074,6 @@
             color: var(--text-dim);
             letter-spacing: 0.1em;
             text-transform: uppercase;
-            border-left: 1px solid var(--border);
-            padding-left: 1rem;
         }
 
         .footer-right {
