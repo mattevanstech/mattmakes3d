@@ -62,27 +62,32 @@ export async function getPrints() {
   return data.results.map((page) => {
     const props = page.properties;
 
-    // Extract photo URL — supports external links (GitHub CDN, etc.) and legacy relative paths
-    // If the URL is from the old makes.mattevanstech.com host, convert to a relative path.
-    // All other URLs (GitHub CDN, etc.) are kept as full absolute URLs.
+    const title = props["Model Name"]?.title?.[0]?.plain_text ?? "";
+    const date = props["Print Date"]?.date?.start ?? "";
+    const slug = toSlug(title);
+
+    // Derive the canonical CDN photo URL from slug + date.
+    // All new uploads via the CDN upload tool follow this convention:
+    //   https://cdn.mattmakes3d.com/images/{slug}-{YYYY-MM-DD}.jpg
+    // Fall back to the Notion Photo field for any entries not yet migrated
+    // to the CDN (e.g. photos still hosted on the old makes.mattevanstech.com host).
     let photo = "";
-    const photoFiles = props.Photo?.files ?? [];
-    if (photoFiles.length > 0) {
-      const file = photoFiles[0];
-      const rawUrl = file.type === "external" ? file.external.url : (file.file?.url ?? "");
-      if (rawUrl.startsWith("https://makes.mattevanstech.com/")) {
-        photo = rawUrl.replace("https://makes.mattevanstech.com/", "/");
-      } else {
-        photo = rawUrl; // full external URL (GitHub CDN, etc.)
+    if (slug && date) {
+      photo = `https://cdn.mattmakes3d.com/images/${slug}-${date}.jpg`;
+    } else {
+      // Fallback: read directly from the Notion Photo field
+      const photoFiles = props.Photo?.files ?? [];
+      if (photoFiles.length > 0) {
+        const file = photoFiles[0];
+        photo = file.type === "external" ? file.external.url : (file.file?.url ?? "");
       }
     }
 
-    const title = props["Model Name"]?.title?.[0]?.plain_text ?? "";
     return {
       id: page.id,
       title,
-      slug: toSlug(title),
-      date: props["Print Date"]?.date?.start ?? "",
+      slug,
+      date,
       photo,
       model_url: props["Model Source URL"]?.url ?? "",
       model_source: props["Source"]?.rich_text?.[0]?.plain_text ?? "",
