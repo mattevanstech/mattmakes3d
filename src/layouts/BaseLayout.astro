@@ -26,7 +26,9 @@ const {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{title}</title>
   <meta name="description" content={description} />
-  <link rel="icon" type="image/svg+xml" href="/assets/logo.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="192x192" href="/assets/favicon-192.png" />
   <meta name="author" content="Matt Evans" />
   <link rel="canonical" href={`https://mattmakes3d.com${Astro.url.pathname}`} />
 
@@ -47,7 +49,7 @@ const {
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;700&family=Barlow:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;700&family=Barlow:wght@400;500;700&family=Lilita+One&display=swap" rel="stylesheet" />
 
   <link rel="stylesheet" href="/styles/global.css" />
   <ViewTransitions />
@@ -222,8 +224,14 @@ const {
     <div class="footer-inner">
       <div class="footer-left">
         <a href="/" class="footer-logo">
-          <img src="/assets/logo.svg" alt="MattMakes3D" height="40" style="width:auto;display:block;" />
-          <span class="footer-logo-text">MattMakes3D</span>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 373.6 168.0" height="52" style="width:auto;display:block;" aria-label="MattMakes3D" role="img">
+            <rect x="14" y="12" width="340.64" height="136" rx="68" fill="none" stroke="#FFFFFF" stroke-width="8"/>
+            <g font-family="'Lilita One', sans-serif">
+              <text x="50" y="76" font-size="40" fill="#FFFFFF">MATT</text>
+              <text x="50" y="112" font-size="40" fill="#FFFFFF">MAKES</text>
+              <text x="204.24" y="115" font-size="100" fill="#FFFFFF">3D</text>
+            </g>
+          </svg>
         </a>
         <span class="footer-tagline">Fresh Off The Bed</span>
       </div>
