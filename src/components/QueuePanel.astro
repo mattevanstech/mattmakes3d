@@ -1,5 +1,5 @@
 ---
-// QueuePanel.astro — sidebar showing what's coming up next
+// QueuePanel.astro — homepage sidebar showing what's queued next
 import type { QueueItem } from '../content/types';
 
 interface Props {
@@ -7,39 +7,38 @@ interface Props {
   totalCount?: number;
 }
 const { items, totalCount = items.length } = Astro.props;
-const hasMore = totalCount > items.length;
 ---
 
-<div class="queue-panel">
-  <a href="/queue" class="section-label section-label-link">Print Queue</a>
+<aside class="queue-panel">
+  <div class="queue-panel-header">
+    <span class="eyebrow">Print Queue</span>
+    {totalCount > 0 && (
+      <a href="/queue" class="queue-panel-viewall">View all {totalCount} →</a>
+    )}
+  </div>
+
   {items.length === 0 ? (
-    <div class="queue-empty">Queue is empty</div>
+    <div class="queue-empty" style="padding:32px 12px; font-size:12px;">Queue is empty</div>
   ) : (
-    items.map((item) => (
-      <a href={item.url || '#'} class="queue-item" target={item.url ? '_blank' : undefined} rel={item.url ? 'noopener noreferrer' : undefined}>
-        <div class="queue-item-info">
-          <span class="queue-item-title">{item.title}</span>
-          <span class="queue-item-source">{item.source}</span>
-        </div>
-        <span class="queue-item-arrow">→</span>
-      </a>
-    ))
+    <div class="queue-panel-list">
+      {items.map((item, i) => (
+        <a
+          href={item.url || '/queue'}
+          class="queue-panel-item"
+          target={item.url ? '_blank' : undefined}
+          rel={item.url ? 'noopener noreferrer' : undefined}
+        >
+          <span class="queue-panel-n">{String(i + 1).padStart(2, '0')}</span>
+          <span class="queue-panel-title">{item.title}</span>
+          <span class="queue-panel-source">{item.source} →</span>
+        </a>
+      ))}
+    </div>
   )}
-  {hasMore && (
-    <a href="/queue" class="queue-view-all">
+
+  {totalCount > 0 && (
+    <a href="/queue" class="queue-panel-footer">
       View all {totalCount} in queue →
     </a>
   )}
-</div>
-
-<style>
-  .section-label-link {
-    text-decoration: none;
-    display: block;
-    transition: color 0.2s;
-  }
-
-  .section-label-link:hover {
-    color: var(--amber);
-  }
-</style>
+</aside>

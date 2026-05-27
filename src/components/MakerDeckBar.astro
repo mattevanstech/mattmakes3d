@@ -1,23 +1,68 @@
 ---
-// MakerDeckBar.astro — the sub-header strip below the main header
+// MakerDeckBar.astro — strip below the header
+// Desktop: shows both messages side-by-side. Mobile: rotates between the two every 5s.
 ---
 
-<div class="makerdeck-bar" transition:persist>
-  <div class="makerdeck-bar-inner">
-    <img src="/assets/MakerDeck_Logo.svg" alt="MakerDeck" class="makerdeck-bar-logo" />
-    <div class="makerdeck-bar-divider"></div>
-    <div class="makerdeck-bar-items">
-      <span class="makerdeck-bar-item">
-        <span class="live-dot"></span>
+<div class="makerdeck-banner" transition:persist>
+  <img src="/assets/makerdeck-logo.png" alt="MakerDeck" class="md-logo" />
+
+  <!-- Desktop: both messages visible -->
+  <span class="md-message md-message-desktop">
+    <span class="md-dot" aria-hidden="true"></span>
+    <a href="https://twitch.tv/makerdeck" target="_blank" rel="noopener">24/7 Stream on Twitch</a>
+  </span>
+  <span class="md-sep md-message-desktop" aria-hidden="true">·</span>
+  <span class="md-trailing md-message-desktop">
+    <a href="https://youtube.com/@makerdeck" target="_blank" rel="noopener">The Maker Show</a>
+    — with Chris Pirillo &amp; Matt Evans · Tuesdays 6pm PST on YouTube
+  </span>
+
+  <!-- Mobile: rotating ticker -->
+  <div class="md-mobile-frame" aria-live="polite">
+    <div class="md-mobile-msg is-active" data-msg="0">
+      <span class="md-message">
+        <span class="md-dot" aria-hidden="true"></span>
         <a href="https://twitch.tv/makerdeck" target="_blank" rel="noopener">24/7 Stream on Twitch</a>
       </span>
-      <span class="makerdeck-bar-sep hide-sm">·</span>
-      <span class="makerdeck-bar-item hide-sm">
-        <a href="https://youtube.com/@makerdeck" target="_blank" rel="noopener" class="yt-link">
-          The Maker Show
-        </a>
-        — with Chris Pirillo &amp; Matt Evans · Tuesdays 6pm PST on YouTube
+    </div>
+    <div class="md-mobile-msg" data-msg="1">
+      <span class="md-message">
+        <a href="https://youtube.com/@makerdeck" target="_blank" rel="noopener">The Maker Show</a>
+        <span style="opacity:.85;">· Tues 6pm PST</span>
       </span>
     </div>
   </div>
 </div>
+
+<script>
+  // Rotate the mobile ticker every 5s. Persists across navigations because the
+  // banner itself uses transition:persist.
+  (function () {
+    let timer: number | null = null;
+
+    function start() {
+      stop();
+      const frame = document.querySelector('.md-mobile-frame');
+      if (!frame) return;
+      const msgs = Array.from(frame.querySelectorAll('.md-mobile-msg')) as HTMLElement[];
+      if (msgs.length < 2) return;
+      let i = 0;
+      timer = window.setInterval(() => {
+        const prev = msgs[i];
+        i = (i + 1) % msgs.length;
+        const next = msgs[i];
+        prev.classList.remove('is-active');
+        prev.classList.add('is-leaving');
+        next.classList.add('is-active');
+        next.classList.remove('is-leaving');
+        // Reset leaving state after the transition completes
+        window.setTimeout(() => { prev.classList.remove('is-leaving'); }, 420);
+      }, 5000);
+    }
+    function stop() { if (timer != null) { window.clearInterval(timer); timer = null; } }
+
+    start();
+    document.addEventListener('astro:page-load', start);
+    document.addEventListener('astro:before-swap', stop);
+  })();
+</script>

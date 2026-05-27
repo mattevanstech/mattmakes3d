@@ -1,113 +1,87 @@
 ---
-// index.astro — home page: featured print + grid + queue sidebar
+// index.astro — home: hero + queue preview + featured + all makes grid
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PrintCard from '../components/PrintCard.astro';
 import QueuePanel from '../components/QueuePanel.astro';
-import type { Print, QueueItem } from '../content/types';
-
-// ── Data ─────────────────────────────────────────────────────────────────────
-import { getPrints, getQueue } from '../lib/notion';
+import { getPrints, getQueue } from '../lib/notion.js';
 
 const prints = await getPrints();
-const queue = await getQueue();
+const queue  = await getQueue();
 const queuePreview = queue.slice(0, 3);
 
-// Sort newest first
 const sorted = [...prints].sort((a, b) => b.date.localeCompare(a.date));
-
-// Pick up to 2 featured items; backfill with newest if needed
 const markedFeatured = sorted.filter(p => p.featured);
 const backfill = sorted.filter(p => !p.featured);
 const featuredItems = [...markedFeatured, ...backfill].slice(0, 2);
 const allGrid = sorted.filter(p => !featuredItems.includes(p));
 const grid = allGrid.slice(0, 12);
-const hasMoreMakes = allGrid.length > 12;
+const totalMakes = sorted.length;
+const hasMore = allGrid.length > 12;
 ---
 
 <BaseLayout currentPage="home">
 
-  <!-- ── HERO BAND ─────────────────────────────────────────────────────── -->
-  <div class="hero-band">
+  <!-- ── HERO BAND ────────────────────────────────────────────── -->
+  <section class="hero-band">
     <div class="hero-band-inner">
       <div class="hero fade-up fade-up-1">
-        <div class="hero-eyebrow">Print Log</div>
+        <span class="hero-eyebrow">Print Log</span>
         <h1>Fresh Off<em>The Bed.</em></h1>
         <p class="hero-sub">
           A running record of what's coming off the printer. Models, makes,
           and everything in between.
         </p>
-      </div>
-      <QueuePanel items={queuePreview} totalCount={queue.length} />
-    </div>
-  </div>
-
-  <!-- ── MAIN ──────────────────────────────────────────────────────────── -->
-  <main>
-
-    <!-- Featured -->
-    <div id="featured-container" class="fade-up fade-up-2">
-      <div class="section-heading">
-        <span class="section-heading-eyebrow">◈ Top Picks</span>
-        <h2 class="section-heading-title">Featured Makes</h2>
-      </div>
-      <div class="featured-grid">
-        {featuredItems.map((item) => {
-          const slug = item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-          return (
-            <div
-              class="featured-card"
-              data-lightbox
-              data-id={slug}
-              data-title={item.title}
-              data-photo={item.photo}
-              data-date={item.date}
-              data-model-url={item.model_url}
-              data-model-source={item.model_source}
-              tabindex="0"
-              role="button"
-            >
-              <div class="featured-photo">
-                {item.photo
-                  ? <img src={item.photo} alt={item.title} />
-                  : <div class="photo-placeholder"><span>NO PHOTO</span></div>
-                }
-                <div class="featured-badge">Featured</div>
-              </div>
-              <div class="featured-info">
-                <div>
-                  <div class="featured-title">{item.title}</div>
-                  <div class="featured-date"><span>◈</span>{new Date(item.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
-                  <div class="ruler">
-                    {Array.from({ length: 24 }).map((_, i) => (
-                      <div class="ruler-tick" style={`height: ${i % 5 === 4 ? 14 : 8}px`}></div>
-                    ))}
-                  </div>
-                </div>
-                <span class="model-link">View Details →</span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-
-    <!-- Grid -->
-    <div class="fade-up fade-up-3">
-      <div class="section-heading">
-        <span class="section-heading-eyebrow">◈ The Collection</span>
-        <h2 class="section-heading-title">All Makes <span class="section-heading-count">{grid.length}</span></h2>
-      </div>
-      <div id="prints-grid">
-        {grid.map(print => <PrintCard print={print} />)}
-      </div>
-      {hasMoreMakes && (
-        <div class="view-all-wrap">
-          <a href="/archive" class="view-all-btn">
-            View All {allGrid.length + featuredItems.length} Makes →
+        <div class="hero-buttons">
+          <a href="/archive" class="btn btn-primary">
+            Browse Archive
+            <span class="btn-mono-arrow">→</span>
+          </a>
+          <a href="/queue" class="btn btn-outline">
+            Print Queue ({queue.length})
           </a>
         </div>
+      </div>
+
+      <div class="fade-up fade-up-2">
+        <QueuePanel items={queuePreview} totalCount={queue.length} />
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FEATURED MAKES ───────────────────────────────────────── -->
+  {featuredItems.length > 0 && (
+    <section class="site-section fade-up fade-up-3">
+      <div class="section-heading">
+        <span class="eyebrow">Top Picks</span>
+        <h2 class="section-heading-title">Featured <em>Makes</em></h2>
+      </div>
+      <div class="featured-grid">
+        {featuredItems.map((item) => (
+          <PrintCard print={item} featured={true} />
+        ))}
+      </div>
+    </section>
+  )}
+
+  <!-- ── ALL MAKES GRID ───────────────────────────────────────── -->
+  <section class="site-section fade-up fade-up-4" style="padding-top: 0;">
+    <div class="section-heading-row">
+      <div class="section-heading" style="margin-bottom:0;">
+        <span class="eyebrow">The Collection</span>
+        <h2 class="section-heading-title">
+          All <em>Makes</em>
+          <span class="section-heading-count">{totalMakes}</span>
+        </h2>
+      </div>
+      {hasMore && (
+        <a href="/archive" class="view-all">
+          View All {totalMakes} Makes <span>→</span>
+        </a>
       )}
     </div>
+    <div class="makes-grid">
+      {grid.map(print => <PrintCard print={print} />)}
+    </div>
+  </section>
 
-  </main>
 </BaseLayout>

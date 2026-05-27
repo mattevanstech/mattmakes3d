@@ -1,22 +1,43 @@
 ---
+// about.astro — the personal story behind MattMakes3D
 import BaseLayout from '../layouts/BaseLayout.astro';
+
+const facts = [
+  { k: 'Based',    v: 'Seattle, WA' },
+  { k: 'Printers', v: 'Bambu A1 · A1 Mini' },
+  { k: 'Started',  v: '2023' },
+  { k: 'Day job',  v: 'mattevanstech.com' },
+];
 ---
 
 <BaseLayout
+  currentPage="about"
   title="About – MattMakes3D"
   description="The story behind MattMakes3D — a personal print log of 3D printing experiments, builds, and the maker journey."
 >
-  <main class="about-main">
-    <div class="about-inner">
-
-      <div class="about-header">
-        <div class="section-label">About</div>
-        <h1 class="about-title">The Maker Journey</h1>
-        <p class="about-subtitle">Not perfectly planned. Not always smooth. But always moving forward.</p>
+  <!-- ── MASTHEAD ──────────────────────────────────────────────── -->
+  <section class="hero-band">
+    <div class="hero-band-inner" style="display:block; padding-bottom: 28px;">
+      <div class="fade-up fade-up-1">
+        <span class="hero-eyebrow">The Person</span>
+        <h1 style="margin-top:12px;">About<em>MattMakes3D.</em></h1>
       </div>
+    </div>
+  </section>
 
-      <div class="about-body">
-        <p>MattMakes3D started the same way a lot of good hobbies do. With curiosity, a bit of obsession, and the simple desire to make something cool.</p>
+  <!-- ── BODY ──────────────────────────────────────────────────── -->
+  <section class="site-section fade-up fade-up-2">
+    <div class="about-grid">
+
+      <!-- Prose -->
+      <div class="about-prose">
+        <p class="about-lead">
+          MattMakes3D started the same way a lot of good hobbies do. With
+          curiosity, a bit of obsession, and the simple desire to make
+          something cool.
+        </p>
+
+        <hr class="about-divider" />
 
         <p>About three years ago, I got into 3D printing because I wanted to build things for my office. At first, it was mostly Star Wars prints. Helmets, props, display pieces, the kind of stuff that makes a workspace feel more like a personal command center than just another desk. What started as a fun side project quickly turned into something I looked forward to every single day.</p>
 
@@ -26,107 +47,44 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
         <p>Most of what you see here is powered by my two Bambu printers, an A1 and an A1 Mini. They've helped me move from casual tinkering into a more consistent creative rhythm. Print, learn, adjust, repeat. That cycle has become part of how I unwind and stay inspired.</p>
 
-        <p>Beyond my own prints, being part of the maker community has become just as important as the machines themselves. I help support <a href="https://twitch.tv/makerdeck" target="_blank" rel="noopener">MakerDeck</a>, a 24/7 live stream where makers around the world build together in real time. I also co-host <a href="https://youtube.com/@makerdeck" target="_blank" rel="noopener">The MakerShow</a> with Chris every Tuesday at 6pm, and help organize our monthly in-person meetups in Issaquah, which happen every third Monday. Those nights are a reminder that making is better when it's shared.</p>
+        <p>I help support <a href="https://twitch.tv/makerdeck" target="_blank" rel="noopener">MakerDeck</a>, a 24/7 live stream where makers around the world build together in real time. I also co-host <a href="https://youtube.com/@makerdeck" target="_blank" rel="noopener">The MakerShow</a> with Chris every Tuesday at 6pm, and help organize our monthly in-person meetups in Issaquah, which happen every third Monday. Those nights are a reminder that making is better when it's shared.</p>
 
         <p>MattMakes3D is still very much a hobby. But like any good side quest, it's leading to bigger ideas. New projects. New collaborations. New ways to create and connect. This site is where that story gets documented one print at a time.</p>
 
         <p>If you're into 3D printing, Star Wars, creative problem solving, or just watching someone figure things out as they go, you'll probably feel at home here.</p>
-
       </div>
 
-      <div class="about-back">
-        <a href="/">← Back to Latest Prints</a>
-      </div>
+      <!-- Sidebar -->
+      <aside class="about-sidebar">
+        <img src="/assets/matt-photo.jpg" alt="Matt Evans" class="about-avatar" />
+
+        <div class="facts-card">
+          <span class="eyebrow">The Facts</span>
+          <dl class="facts-list">
+            {facts.map((f) => (
+              <div class="row">
+                <dt>{f.k}</dt>
+                <dd>{f.v}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+
+        <a href="https://twitch.tv/makerdeck" target="_blank" rel="noopener" class="makerdeck-cta">
+          <img src="/assets/makerdeck-logo.png" alt="MakerDeck" />
+          <div class="makerdeck-cta-body">
+            <div class="makerdeck-cta-title">Watch MakerDeck</div>
+            <div class="makerdeck-cta-sub">Live 24/7 on Twitch</div>
+          </div>
+          <span class="makerdeck-cta-arrow">→</span>
+        </a>
+
+        <div class="contact-card">
+          <div class="contact-card-label">Get in touch</div>
+          <a href="mailto:hello@mattmakes3d.com">hello@mattmakes3d.com</a>
+        </div>
+      </aside>
 
     </div>
-  </main>
+  </section>
 </BaseLayout>
-
-<style>
-  .about-main {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 3rem 2rem 5rem;
-  }
-
-  .about-inner {
-    max-width: 720px;
-  }
-
-  .about-header {
-    margin-bottom: 3rem;
-  }
-
-  .about-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 3.5rem;
-    letter-spacing: 0.04em;
-    color: var(--text-hi);
-    line-height: 1;
-    margin: 0.5rem 0 0.75rem;
-  }
-
-  .about-subtitle {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.8rem;
-    color: var(--amber);
-    letter-spacing: 0.08em;
-    font-style: italic;
-  }
-
-  .about-body {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .about-body p {
-    font-family: 'Barlow', sans-serif;
-    font-size: 1.05rem;
-    line-height: 1.8;
-    color: var(--text);
-  }
-
-  .about-body a {
-    color: var(--amber);
-    text-decoration: none;
-    border-bottom: 1px solid rgba(224, 123, 42, 0.3);
-    transition: border-color 0.2s, color 0.2s;
-  }
-
-  .about-body a:hover {
-    color: #f0a060;
-    border-bottom-color: #f0a060;
-  }
-
-  .about-back {
-    margin-top: 3rem;
-    padding-top: 2rem;
-    border-top: 1px solid var(--border);
-  }
-
-  .about-back a {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    text-decoration: none;
-    transition: color 0.2s;
-  }
-
-  .about-back a:hover {
-    color: var(--amber);
-  }
-
-  @media (max-width: 768px) {
-    .about-title {
-      font-size: 2.5rem;
-    }
-
-    .about-body p {
-      font-size: 1rem;
-    }
-  }
-</style>

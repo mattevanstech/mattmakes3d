@@ -1,21 +1,22 @@
 ---
-// PrintCard.astro — a single print in the grid
+// PrintCard.astro — a single make in the grid
 import type { Print } from '../content/types';
+import { toSlug } from '../lib/notion.js';
 
 interface Props {
   print: Print;
+  featured?: boolean;
 }
-const { print } = Astro.props;
+const { print, featured = false } = Astro.props;
 
 const formattedDate = new Date(print.date).toLocaleDateString('en-US', {
   year: 'numeric', month: 'short', day: 'numeric',
 });
-
-const slug = print.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const slug = print.slug || toSlug(print.title);
 ---
 
 <div
-  class="print-card"
+  class:list={['make-card', { 'is-featured': featured }]}
   data-lightbox
   data-id={slug}
   data-title={print.title}
@@ -23,20 +24,32 @@ const slug = print.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-
   data-date={print.date}
   data-model-url={print.model_url}
   data-model-source={print.model_source}
-  tabindex="0"
-  role="button"
   data-title-lower={print.title.toLowerCase()}
   data-year={print.date.slice(0, 4)}
+  tabindex="0"
+  role="button"
+  aria-label={`${print.title} — view details`}
 >
-  <div class="print-card-photo">
-    <img src={print.photo} alt={print.title} loading="lazy" />
-    <span class="print-card-hover-badge">View Details →</span>
+  <div class="make-card-photo">
+    {print.photo
+      ? <img src={print.photo} alt={print.title} loading="lazy" />
+      : <div class="photo-placeholder"><span>No Photo</span></div>
+    }
+    {featured && (
+      <div class="make-card-featured-badge">Featured</div>
+    )}
+    <span class="make-card-hover-pill">View Details →</span>
   </div>
-  <div class="print-card-body">
-    <div class="print-card-title">{print.title}</div>
-    <div class="print-card-meta">
-      <span class="print-card-date">{formattedDate}</span>
-      <span class="print-card-source">{print.model_source}</span>
+  <div class="make-card-body">
+    <div class="make-card-title">{print.title}</div>
+    <div class="make-card-meta">
+      <span>{formattedDate}</span>
+      {print.model_source && (
+        <>
+          <span class="sep">·</span>
+          <span>{print.model_source}</span>
+        </>
+      )}
     </div>
   </div>
 </div>

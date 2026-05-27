@@ -1,0 +1,202 @@
+---
+// links.astro — standalone link-in-bio page
+// Per the handoff README, this is a separate brand surface — no header / banner / footer,
+// no dark-mode toggle. Forces light theme for consistent brand presentation.
+const title = 'MattMakes3D — Links';
+const description = 'Quick links to my socials, print log, MakerDeck, and upcoming events.';
+const ogImage = 'https://mattmakes3d.com/assets/og-image.png';
+---
+
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png" />
+  <link rel="apple-touch-icon" sizes="192x192" href="/assets/favicon-192.png" />
+  <link rel="canonical" href="https://mattmakes3d.com/links" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:image" content={ogImage} />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500;1,6..72,600&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="/styles/global.css" />
+
+  <style is:global>
+    body {
+      padding: 32px 16px;
+      background-color: #061027;
+      background-image: radial-gradient(rgba(244, 120, 40, 0.10) 1px, transparent 1px);
+      background-size: 3px 3px;
+      min-height: 100vh;
+    }
+    .links-page {
+      background: var(--paper);
+      border-radius: 16px;
+      box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.5);
+      padding-bottom: 32px;
+      overflow: hidden;
+    }
+    /* On mobile, fill the viewport edge-to-edge */
+    @media (max-width: 520px) {
+      body { padding: 0; }
+      .links-page { border-radius: 0; box-shadow: none; min-height: 100vh; }
+    }
+  </style>
+</head>
+<body>
+  <div class="links-page">
+    <!-- ── HERO BANNER ────────────────────────────────────────── -->
+    <div class="links-hero">
+      <div class="links-hero-stripes"></div>
+      <div class="links-hero-stamp">EST · 2023</div>
+    </div>
+
+    <!-- Logo overlap -->
+    <div class="links-logo-wrap">
+      <img src="/assets/mattmakes3d-logo.png" alt="MattMakes3D" class="links-logo" />
+    </div>
+
+    <div class="links-handle">@mattmakes3d · Seattle, WA</div>
+    <p class="links-bio">
+      3D printing, projects, and the lessons in between. The personal print
+      log of a tech enthusiast with two Bambu printers and too many ideas.
+    </p>
+
+    <!-- ── SOCIAL PILLS ──────────────────────────────────────── -->
+    <div class="links-socials">
+      <a href="https://instagram.com/mattmakes3d_" target="_blank" rel="noopener" class="links-social-pill">
+        <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+        <span>Instagram</span>
+      </a>
+      <a href="https://tiktok.com/@mattmakes3d" target="_blank" rel="noopener" class="links-social-pill">
+        <svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.76a4.85 4.85 0 01-1.01-.07z"/></svg>
+        <span>TikTok</span>
+      </a>
+      <a href="https://threads.net/@mattmakes3d_" target="_blank" rel="noopener" class="links-social-pill">
+        <svg viewBox="0 0 448 512"><path fill-rule="evenodd" d="M331.5 235.7c2.2 .9 4.2 1.9 6.3 2.8c29.2 14.1 50.6 35.2 61.8 61.4c15.7 36.5 17.2 95.8-30.3 143.2c-36.2 36.2-80.3 52.5-142.6 53h-.3c-70.2-.5-124.1-24.1-160.4-70.2c-32.3-41-48.9-98.1-49.5-169.6V256v-.2C17 184.3 33.6 127.2 65.9 86.2C102.2 40.1 156.2 16.5 226.4 16h.3c70.3 .5 124.9 24 162.3 69.9c18.4 22.7 32 50 40.6 81.7l-40.4 10.8c-7.1-25.8-17.8-47.8-32.2-65.4c-29.2-35.8-73-54.2-130.5-54.6c-57 .5-100.1 18.8-128.2 54.4C72.1 146.1 58.5 194.3 58 256c.5 61.7 14.1 109.9 40.3 143.3c28 35.6 71.2 53.9 128.2 54.4c51.4-.4 85.4-12.6 113.7-40.9c32.3-32.2 31.7-71.8 21.4-95.9c-6.1-14.2-17.1-26-31.9-34.9c-3.7 26.9-11.8 48.3-24.7 64.8c-17.1 21.8-41.4 33.6-72.7 35.3c-23.6 1.3-46.3-4.4-63.9-16c-20.8-13.8-33-34.8-34.3-59.3c-2.5-48.3 35.7-83 95.2-86.4c21.1-1.2 40.9-.3 59.2 2.8c-2.4-14.8-7.3-26.6-14.6-35.2c-10-11.7-25.6-17.7-46.2-17.8H227c-16.6 0-39 4.6-53.3 26.3l-34.4-23.6c19.2-29.1 50.3-45.1 87.8-45.1h.8c62.6 .4 99.9 39.5 103.7 107.7l-.2 .2zm-156 68.8c1.3 25.1 28.4 36.8 54.6 35.3c25.6-1.4 54.6-11.4 59.5-73.2c-13.2-2.9-27.8-4.4-43.4-4.4c-4.8 0-9.6 .1-14.4 .4c-42.9 2.4-57.2 23.2-56.2 41.8l-.1 .1z"/></svg>
+        <span>Threads</span>
+      </a>
+      <a href="https://bsky.app/profile/mattmakes3d.com" target="_blank" rel="noopener" class="links-social-pill">
+        <svg viewBox="0 0 24 24"><path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.039.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 01-.415-.056c.14.017.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.204-.659-.299-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8z"/></svg>
+        <span>Bluesky</span>
+      </a>
+      <a href="https://mastodon.social/@mattmakes3d" target="_blank" rel="noopener me" class="links-social-pill">
+        <svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="M23.268 5.313c-.35-2.578-2.617-4.61-5.304-5.004C17.51.242 15.792 0 11.813 0h-.03c-3.98 0-4.835.242-5.288.309C3.882.692 1.496 2.518.917 5.127.64 6.412.61 7.837.661 9.143c.074 1.874.088 3.745.26 5.611.118 1.24.325 2.47.62 3.68.55 2.237 2.777 4.098 4.96 4.857 2.336.792 4.849.923 7.256.38.265-.061.527-.132.786-.213.585-.184 1.27-.39 1.774-.753a.057.057 0 00.023-.043v-1.809a.052.052 0 00-.02-.041.053.053 0 00-.046-.01 20.282 20.282 0 01-4.709.545c-2.73 0-3.463-1.284-3.674-1.818a5.593 5.593 0 01-.319-1.433.053.053 0 01.066-.054c1.517.363 3.072.546 4.632.546.376 0 .75 0 1.125-.01 1.57-.044 3.224-.124 4.768-.422.038-.008.077-.015.11-.024 2.435-.464 4.753-1.92 4.989-5.604.008-.145.03-1.52.03-1.67.002-.512.167-3.63-.024-5.545zm-3.748 9.195h-2.561V8.29c0-1.309-.55-1.976-1.67-1.976-1.23 0-1.846.79-1.846 2.35v3.403h-2.546V8.663c0-1.56-.617-2.35-1.848-2.35-1.112 0-1.668.668-1.67 1.977v6.218H4.822V8.102c0-1.31.337-2.35 1.011-3.12.696-.77 1.608-1.164 2.74-1.164 1.311 0 2.302.5 2.962 1.498l.638 1.06.638-1.06c.66-.999 1.65-1.498 2.96-1.498 1.13 0 2.043.395 2.74 1.164.675.77 1.012 1.81 1.012 3.12z"/></svg>
+        <span>Mastodon</span>
+      </a>
+    </div>
+
+    <!-- ── COLLAB + MAKERDECK DUAL ROW ───────────────────────── -->
+    <div class="links-dual-row">
+      <a href="mailto:hello@mattmakes3d.com" class="links-dual-card">
+        <div class="links-dual-icon green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="5" width="18" height="14" rx="2" />
+            <path d="M3 7l9 6 9-6" />
+          </svg>
+        </div>
+        <div class="links-dual-body">
+          <span class="links-dual-title">Collaborations</span>
+          <span class="links-dual-status">
+            <span class="dot-green"></span>
+            Accepting
+          </span>
+        </div>
+      </a>
+
+      <a href="https://www.twitch.tv/makerdeck" target="_blank" rel="noopener" class="links-dual-card">
+        <div class="links-dual-icon">
+          <img src="/assets/makerdeck-logo.png" alt="MakerDeck" />
+        </div>
+        <div class="links-dual-body">
+          <span class="links-dual-title">MakerDeck</span>
+          <span class="links-dual-status">
+            <span class="dot-red"></span>
+            Live now
+          </span>
+        </div>
+      </a>
+    </div>
+
+    <!-- ── PRINT LOG MAIN CTA ────────────────────────────────── -->
+    <a href="https://mattmakes3d.com" class="links-cta">
+      <img src="/assets/m3d-avatar.png" alt="" class="links-cta-avatar" />
+      <div class="links-cta-body">
+        <span class="links-cta-title">Print Log</span>
+        <span class="links-cta-sub">mattmakes3d.com</span>
+      </div>
+      <span class="links-arrow">→</span>
+    </a>
+
+    <!-- ── EVENTS ─────────────────────────────────────────────── -->
+    <div class="links-section-label">
+      <span class="links-section-label-text">Events</span>
+    </div>
+    <a href="https://makerdeck.net/mixers" target="_blank" rel="noopener" class="links-event-card">
+      <div class="links-event-photo">
+        <img src="/assets/event-mixer.jpg" alt="MakerDeck IRL Mixer" />
+      </div>
+      <div class="links-event-body">
+        <div class="links-event-meta">
+          <span>MakerDeck IRL · Seattle</span>
+          <span class="right">Monthly</span>
+        </div>
+        <div class="links-event-title">MakerDeck IRL Mixer — Makers, Techies &amp; Geeks</div>
+        <div class="links-event-blurb">
+          Free in-person networking for makers, coders, and 3D printing
+          enthusiasts. Pizza, side projects, and good people.
+        </div>
+        <div class="links-event-cta">
+          View upcoming mixers
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7" /></svg>
+        </div>
+      </div>
+    </a>
+
+    <!-- ── WORKSHOP GEAR ──────────────────────────────────────── -->
+    <div class="links-section-label">
+      <span class="links-section-label-text">The Workshop Gear</span>
+    </div>
+    <div class="links-gear-list">
+      <a href="https://bambulab.com/en/a1" target="_blank" rel="noopener" class="links-gear-card">
+        <div class="links-gear-icon">
+          <svg viewBox="0 0 24 24"><rect x="4" y="9" width="16" height="9" rx="1.5" /><path d="M7 9V4h10v5" /><rect x="8" y="14" width="8" height="6" rx="0.5" /></svg>
+        </div>
+        <div class="links-gear-info">
+          <div class="links-gear-name">Bambu Lab A1</div>
+          <div class="links-gear-meta">Main printer · 256×256×256 · AMS lite</div>
+        </div>
+      </a>
+      <a href="https://bambulab.com/en/a1-mini" target="_blank" rel="noopener" class="links-gear-card">
+        <div class="links-gear-icon">
+          <svg viewBox="0 0 24 24"><rect x="4" y="9" width="16" height="9" rx="1.5" /><path d="M7 9V4h10v5" /><rect x="8" y="14" width="8" height="6" rx="0.5" /></svg>
+        </div>
+        <div class="links-gear-info">
+          <div class="links-gear-name">Bambu Lab A1 Mini</div>
+          <div class="links-gear-meta">Second printer · 180×180×180 · AMS lite</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- ── TIP JAR ────────────────────────────────────────────── -->
+    <a href="https://buymeacoffee.com/mattevanstech" target="_blank" rel="noopener" class="links-tip-jar">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7" /><circle cx="12" cy="12" r="2" /><path d="M12 5v14M5 12h14" opacity="0.4" /></svg>
+      Buy me a spool of filament
+    </a>
+
+    <!-- ── FOOTER ─────────────────────────────────────────────── -->
+    <div class="links-footer">
+      <div class="links-footer-row">MATTMAKES3D.COM</div>
+      <div class="links-footer-row sub">a side project by mattevanstech.com</div>
+    </div>
+  </div>
+</body>
+</html>
