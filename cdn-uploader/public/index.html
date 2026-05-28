@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MattMakes3D — CDN Upload Tool</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .card {
+      background: #1a1d27;
+      border: 1px solid #2d3148;
+      border-radius: 16px;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 2rem;
+    }
+
+    .logo svg {
+      width: 28px;
+      height: 28px;
+      color: #6366f1;
+    }
+
+    .logo-text {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #94a3b8;
+      letter-spacing: 0.02em;
+    }
+
+    .logo-text span {
+      color: #6366f1;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 0.4rem;
+    }
+
+    .subtitle {
+      font-size: 0.875rem;
+      color: #64748b;
+      margin-bottom: 2rem;
+    }
+
+    /* Drop zone */
+    .drop-zone {
+      border: 2px dashed #2d3148;
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: #6366f1;
+      background: rgba(99, 102, 241, 0.05);
+    }
+
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .drop-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .drop-label {
+      font-size: 0.9rem;
+      color: #94a3b8;
+    }
+
+    .drop-label strong {
+      color: #6366f1;
+    }
+
+    .drop-hint {
+      font-size: 0.75rem;
+      color: #475569;
+      margin-top: 0.3rem;
+    }
+
+    /* Preview thumbnail */
+    .preview-wrap {
+      display: none;
+      align-items: center;
+      gap: 1rem;
+      background: #0f1117;
+      border-radius: 10px;
+      padding: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .preview-wrap.visible { display: flex; }
+
+    .preview-thumb {
+      width: 64px;
+      height: 64px;
+      object-fit: cover;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+
+    .preview-info { flex: 1; overflow: hidden; }
+
+    .preview-original {
+      font-size: 0.8rem;
+      color: #64748b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .preview-new {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #a5b4fc;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 2px;
+    }
+
+    .preview-size {
+      font-size: 0.75rem;
+      color: #475569;
+      margin-top: 2px;
+    }
+
+    .remove-btn {
+      background: none;
+      border: none;
+      color: #475569;
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: 4px;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .remove-btn:hover { color: #ef4444; }
+
+    /* Form fields */
+    .field {
+      margin-bottom: 1.25rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.5rem;
+    }
+
+    input[type="text"], input[type="date"], input[type="password"] {
+      width: 100%;
+      background: #0f1117;
+      border: 1px solid #2d3148;
+      border-radius: 8px;
+      color: #f1f5f9;
+      font-size: 0.95rem;
+      padding: 0.65rem 0.875rem;
+      outline: none;
+      transition: border-color 0.15s;
+      font-family: inherit;
+    }
+
+    input[type="text"]:focus, input[type="date"]:focus, input[type="password"]:focus {
+      border-color: #6366f1;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(0.5);
+    }
+
+    /* Filename preview banner */
+    .filename-preview {
+      background: #0f1117;
+      border: 1px solid #2d3148;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .filename-preview .label {
+      font-size: 0.75rem;
+      color: #475569;
+      white-space: nowrap;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .filename-preview .value {
+      font-size: 0.85rem;
+      color: #a5b4fc;
+      font-family: "SF Mono", "Fira Mono", monospace;
+      word-break: break-all;
+    }
+
+    .filename-preview .value.empty {
+      color: #334155;
+      font-style: italic;
+      font-family: inherit;
+    }
+
+    /* CDN URL result */
+    .result-box {
+      display: none;
+      background: #0d1f18;
+      border: 1px solid #166534;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .result-box.visible { display: block; }
+
+    .result-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #4ade80;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.4rem;
+    }
+
+    .result-url {
+      font-size: 0.85rem;
+      font-family: "SF Mono", "Fira Mono", monospace;
+      color: #86efac;
+      word-break: break-all;
+    }
+
+    .copy-btn {
+      margin-top: 0.75rem;
+      background: #166534;
+      border: none;
+      border-radius: 6px;
+      color: #4ade80;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.4rem 0.875rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .copy-btn:hover { background: #15803d; }
+    .copy-btn.copied { color: #bbf7d0; }
+
+    /* Error box */
+    .error-box {
+      display: none;
+      background: #1f0d0d;
+      border: 1px solid #7f1d1d;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.85rem;
+      color: #fca5a5;
+    }
+
+    .error-box.visible { display: block; }
+
+    /* Submit */
+    .submit-btn {
+      width: 100%;
+      background: #6366f1;
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 700;
+      padding: 0.875rem;
+      cursor: pointer;
+      transition: background 0.15s, opacity 0.15s;
+      letter-spacing: 0.01em;
+    }
+
+    .submit-btn:hover:not(:disabled) { background: #4f46e5; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .submit-btn.loading {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    /* Password screen */
+    #password-screen {
+      text-align: center;
+    }
+
+    #password-screen h1 {
+      margin-bottom: 0.4rem;
+    }
+
+    #password-screen .subtitle {
+      margin-bottom: 1.5rem;
+    }
+
+    #password-screen input {
+      text-align: center;
+      margin-bottom: 1rem;
+      letter-spacing: 0.1em;
+    }
+
+    #password-error {
+      color: #f87171;
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #2d3148;
+      margin: 1.5rem 0;
+    }
+
+    .cdn-info {
+      font-size: 0.75rem;
+      color: #334155;
+      text-align: center;
+    }
+
+    /* ── Tabs ───────────────────────────────────────────────────── */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: #0f1117;
+      border: 1px solid #2d3148;
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 1.5rem;
+    }
+    .tab {
+      flex: 1;
+      background: transparent;
+      border: none;
+      border-radius: 7px;
+      color: #64748b;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0.6rem 0.75rem;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .tab:hover { color: #94a3b8; }
+    .tab.active {
+      background: #6366f1;
+      color: #fff;
+    }
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* Two-column field row */
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    /* Selects, textareas, numbers */
+    select,
+    input[type="number"],
+    input[type="url"],
+    textarea {
+      width: 100%;
+      background: #0f1117;
+      border: 1px solid #2d3148;
+      border-radius: 8px;
+      color: #f1f5f9;
+      font-size: 0.95rem;
+      padding: 0.65rem 0.875rem;
+      outline: none;
+      transition: border-color 0.15s;
+      font-family: inherit;
+    }
+    select:focus,
+    input[type="number"]:focus,
+    input[type="url"]:focus,
+    textarea:focus { border-color: #6366f1; }
+
+    textarea {
+      resize: vertical;
+      min-height: 70px;
+      line-height: 1.4;
+    }
+
+    select {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 0.875rem center;
+      padding-right: 2rem;
+    }
+
+    /* Checkbox row */
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 1.25rem;
+    }
+    .checkbox-row input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #6366f1;
+      cursor: pointer;
+    }
+    .checkbox-row label {
+      margin: 0;
+      text-transform: none;
+      letter-spacing: 0;
+      font-weight: 500;
+      color: #cbd5e1;
+      cursor: pointer;
+    }
+
+    /* Result link */
+    .result-link {
+      display: inline-block;
+      margin-top: 0.5rem;
+      font-size: 0.78rem;
+      color: #86efac;
+      text-decoration: underline;
+    }
+    .result-link:hover { color: #bbf7d0; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- Password screen -->
+  <div id="password-screen">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+      </svg>
+      <span class="logo-text">Matt<span>Makes</span>3D</span>
+    </div>
+    <h1>CDN Upload Tool</h1>
+    <p class="subtitle">Enter your password to continue</p>
+    <input type="password" id="password-input" placeholder="Password" autocomplete="current-password" />
+    <p id="password-error">Incorrect password. Try again.</p>
+    <button class="submit-btn" onclick="checkPassword()">Continue →</button>
+  </div>
+
+  <!-- Upload screen (hidden until authenticated) -->
+  <div id="upload-screen" style="display:none;">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+      </svg>
+      <span class="logo-text">Matt<span>Makes</span>3D</span>
+    </div>
+    <h1>Upload to CDN</h1>
+    <p class="subtitle">Image will be renamed and uploaded to cdn.mattmakes3d.com/images/</p>
+
+    <!-- Tab switcher -->
+    <div class="tabs">
+      <button class="tab active" data-mode="print" type="button">Print Photo</button>
+      <button class="tab" data-mode="deal" type="button">Deal</button>
+    </div>
+
+    <!-- ─── PRINT PANEL ─────────────────────────────────────── -->
+    <div class="panel active" id="panel-print">
+      <!-- Drop zone -->
+      <div class="drop-zone" id="drop-zone">
+        <input type="file" id="file-input" accept="image/*" />
+        <div class="drop-icon">🖼️</div>
+        <p class="drop-label"><strong>Click to choose</strong> or drag & drop</p>
+        <p class="drop-hint">JPG, PNG, WEBP — max 20MB</p>
+      </div>
+
+      <!-- Image preview -->
+      <div class="preview-wrap" id="preview-wrap">
+        <img class="preview-thumb" id="preview-thumb" src="" alt="Preview" />
+        <div class="preview-info">
+          <div class="preview-original" id="preview-original">original-filename.jpg</div>
+          <div class="preview-new" id="preview-new">→ new-filename.jpg</div>
+          <div class="preview-size" id="preview-size"></div>
+        </div>
+        <button class="remove-btn" onclick="clearFile()" title="Remove">✕</button>
+      </div>
+
+      <div class="field">
+        <label for="model-name">Model Name</label>
+        <input type="text" id="model-name" placeholder="e.g. R2-D2, Life-Size C-3PO" />
+      </div>
+
+      <div class="field">
+        <label for="print-date">Print Date</label>
+        <input type="date" id="print-date" />
+      </div>
+
+      <div class="filename-preview">
+        <span class="label">Filename</span>
+        <span class="value empty" id="filename-display">Enter model name and date above</span>
+      </div>
+
+      <button class="submit-btn" id="upload-btn" onclick="handleUpload()" disabled>Upload to CDN</button>
+    </div>
+
+    <!-- ─── DEAL PANEL ──────────────────────────────────────── -->
+    <div class="panel" id="panel-deal">
+      <!-- Drop zone -->
+      <div class="drop-zone" id="deal-drop-zone">
+        <input type="file" id="deal-file-input" accept="image/*" />
+        <div class="drop-icon">🛒</div>
+        <p class="drop-label"><strong>Click to choose</strong> or drag & drop</p>
+        <p class="drop-hint">Product photo — JPG, PNG, WEBP — max 20MB</p>
+      </div>
+
+      <div class="preview-wrap" id="deal-preview-wrap">
+        <img class="preview-thumb" id="deal-preview-thumb" src="" alt="Preview" />
+        <div class="preview-info">
+          <div class="preview-original" id="deal-preview-original">original-filename.jpg</div>
+          <div class="preview-new" id="deal-preview-new">→ new-filename.jpg</div>
+          <div class="preview-size" id="deal-preview-size"></div>
+        </div>
+        <button class="remove-btn" onclick="clearDealFile()" title="Remove">✕</button>
+      </div>
+
+      <div class="field">
+        <label for="deal-name">Product Name</label>
+        <input type="text" id="deal-name" placeholder="e.g. Bambu Lab A1 Mini" />
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="deal-category">Category</label>
+          <select id="deal-category">
+            <option value="">— Select —</option>
+            <option>Printer</option>
+            <option>Filament</option>
+            <option>Tool</option>
+            <option>Upgrade</option>
+            <option>Accessory</option>
+            <option>Software</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="deal-source">Source</label>
+          <select id="deal-source">
+            <option value="">— Select —</option>
+            <option>Amazon</option>
+            <option>Bambu</option>
+            <option>Printables</option>
+            <option>MakerWorld</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="deal-price">Price ($)</label>
+          <input type="number" id="deal-price" step="0.01" min="0" placeholder="29.99" />
+        </div>
+        <div class="field">
+          <label for="deal-original-price">Original ($)</label>
+          <input type="number" id="deal-original-price" step="0.01" min="0" placeholder="49.99 (optional)" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="deal-url">Buy URL</label>
+        <input type="url" id="deal-url" placeholder="https://..." />
+      </div>
+
+      <div class="field">
+        <label for="deal-take">My Take <span style="text-transform:none;color:#475569;font-weight:400;">(optional)</span></label>
+        <textarea id="deal-take" placeholder="Short blurb shown under the product name…"></textarea>
+      </div>
+
+      <div class="checkbox-row">
+        <input type="checkbox" id="deal-featured" />
+        <label for="deal-featured">Mark as Featured (Top Pick)</label>
+      </div>
+
+      <div class="filename-preview">
+        <span class="label">Filename</span>
+        <span class="value empty" id="deal-filename-display">Enter product name above</span>
+      </div>
+
+      <button class="submit-btn" id="deal-upload-btn" onclick="handleDealUpload()" disabled>Add Deal to Notion</button>
+    </div>
+
+    <!-- Shared result/error -->
+    <div class="result-box" id="result-box">
+      <div class="result-label" id="result-label">✓ Upload Successful — CDN URL</div>
+      <div class="result-url" id="result-url"></div>
+      <button class="copy-btn" id="copy-btn" onclick="copyUrl()">Copy URL</button>
+      <a class="result-link" id="result-link" href="#" target="_blank" rel="noopener" style="display:none;">View in Notion →</a>
+    </div>
+
+    <div class="error-box" id="error-box"></div>
+
+    <hr class="divider" />
+    <p class="cdn-info">cdn.mattmakes3d.com/images/</p>
+  </div>
+
+</div>
+
+<script>
+  // ── Config ──────────────────────────────────────────────────────────────
+  // Posts to the server's /api/upload endpoint — password validated server-side
+  const SIMULATE_UPLOAD = false;
+  const CDN_BASE = "https://cdn.mattmakes3d.com/images/";
+
+  // ── Password ─────────────────────────────────────────────────────────────
+  // The password is sent to the server for validation — not checked client-side.
+  // This keeps the password out of the page source and lets you change it via
+  // the UPLOAD_PASSWORD environment variable without redeploying the HTML.
+  document.getElementById("password-input").addEventListener("keydown", e => {
+    if (e.key === "Enter") checkPassword();
+  });
+
+  async function checkPassword() {
+    const val = document.getElementById("password-input").value;
+    if (!val) return;
+
+    // Send a lightweight probe to /api/upload to validate the password
+    const probe = new FormData();
+    probe.append("probe", "1");
+    const res = await fetch("/api/upload", {
+      method: "POST",
+      body: probe,
+      headers: { "x-upload-password": val },
+    });
+
+    if (res.status === 400) {
+      // 400 = authenticated but missing fields — password is correct
+      document.getElementById("password-screen").style.display = "none";
+      document.getElementById("upload-screen").style.display = "block";
+    } else if (res.status === 401) {
+      document.getElementById("password-error").style.display = "block";
+      document.getElementById("password-input").value = "";
+      document.getElementById("password-input").focus();
+    } else {
+      // Any other response also means we're in — show the upload screen
+      document.getElementById("password-screen").style.display = "none";
+      document.getElementById("upload-screen").style.display = "block";
+    }
+  }
+
+  // ── Slug generation ───────────────────────────────────────────────────────
+  // Matches toSlug() in src/lib/notion.js exactly — do not change independently
+  function toSlug(str) {
+    return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  }
+
+  function buildFilename() {
+    const name = document.getElementById("model-name").value.trim();
+    const date = document.getElementById("print-date").value; // YYYY-MM-DD
+    if (!name || !date) return null;
+    const slug = toSlug(name);
+    return `${slug}-${date}.jpg`; // always .jpg for consistent CDN convention
+  }
+
+  function getExtension(filename) {
+    return filename.split(".").pop().toLowerCase();
+  }
+
+  // ── File handling ─────────────────────────────────────────────────────────
+  let selectedFile = null;
+
+  document.getElementById("file-input").addEventListener("change", e => {
+    if (e.target.files[0]) handleFile(e.target.files[0]);
+  });
+
+  const dropZone = document.getElementById("drop-zone");
+  dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("drag-over"); });
+  dropZone.addEventListener("dragleave", () => dropZone.classList.remove("drag-over"));
+  dropZone.addEventListener("drop", e => {
+    e.preventDefault();
+    dropZone.classList.remove("drag-over");
+    if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+  });
+
+  function handleFile(file) {
+    if (!file.type.startsWith("image/")) {
+      showError("Please select an image file (JPG, PNG, WEBP).");
+      return;
+    }
+    if (file.size > 20 * 1024 * 1024) {
+      showError("File is too large. Maximum size is 20MB.");
+      return;
+    }
+    selectedFile = file;
+    hideError();
+
+    // Show thumbnail
+    const reader = new FileReader();
+    reader.onload = e => {
+      document.getElementById("preview-thumb").src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+
+    document.getElementById("preview-original").textContent = file.name;
+    document.getElementById("preview-size").textContent = formatBytes(file.size);
+    document.getElementById("preview-wrap").classList.add("visible");
+    dropZone.style.display = "none";
+
+    updateFilenamePreview();
+    checkReady();
+  }
+
+  function clearFile() {
+    selectedFile = null;
+    document.getElementById("file-input").value = "";
+    document.getElementById("preview-wrap").classList.remove("visible");
+    document.getElementById("preview-thumb").src = "";
+    dropZone.style.display = "block";
+    updateFilenamePreview();
+    checkReady();
+    hideResult();
+  }
+
+  function formatBytes(bytes) {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+  }
+
+  // ── Live filename preview ────────────────────────────────────────────────
+  document.getElementById("model-name").addEventListener("input", () => {
+    updateFilenamePreview();
+    checkReady();
+  });
+  document.getElementById("print-date").addEventListener("input", () => {
+    updateFilenamePreview();
+    checkReady();
+  });
+
+  function updateFilenamePreview() {
+    const filename = buildFilename();
+    const display = document.getElementById("filename-display");
+    const newLabel = document.getElementById("preview-new");
+
+    if (filename) {
+      display.textContent = filename;
+      display.classList.remove("empty");
+      if (selectedFile) newLabel.textContent = "→ " + filename;
+    } else {
+      display.textContent = "Enter model name and date above";
+      display.classList.add("empty");
+      if (selectedFile) newLabel.textContent = "→ (fill in fields below)";
+    }
+  }
+
+  function checkReady() {
+    const name = document.getElementById("model-name").value.trim();
+    const date = document.getElementById("print-date").value;
+    const ready = !!selectedFile && !!name && !!date;
+    document.getElementById("upload-btn").disabled = !ready;
+  }
+
+  // ── Upload ────────────────────────────────────────────────────────────────
+  async function handleUpload() {
+    const btn = document.getElementById("upload-btn");
+    btn.disabled = true;
+    btn.textContent = "Uploading…";
+    btn.classList.add("loading");
+    hideResult();
+    hideError();
+
+    const filename = buildFilename();
+
+    if (SIMULATE_UPLOAD) {
+      // Prototype mode: simulate a 1.5s upload
+      await new Promise(r => setTimeout(r, 1500));
+      showResult(CDN_BASE + filename);
+    } else {
+      // Real mode: POST to /api/upload
+      try {
+        const formData = new FormData();
+        formData.append("mode", "print");
+        formData.append("file", selectedFile);
+        formData.append("filename", filename);
+        formData.append("modelName", document.getElementById("model-name").value.trim());
+        formData.append("printDate", document.getElementById("print-date").value);
+
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+          headers: { "x-upload-password": document.getElementById("password-input")?.value || "" }
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Upload failed");
+        showResult(data.url, data.notionUpdated, null, "print");
+      } catch (err) {
+        showError(err.message);
+      }
+    }
+
+    btn.disabled = false;
+    btn.textContent = "Upload to CDN";
+    btn.classList.remove("loading");
+  }
+
+  function showResult(url, notionUpdated, notionPageUrl, mode) {
+    document.getElementById("result-url").textContent = url;
+    document.getElementById("result-box").classList.add("visible");
+    document.getElementById("copy-btn").textContent = "Copy URL";
+    document.getElementById("copy-btn").classList.remove("copied");
+    const label = document.getElementById("result-label");
+    const link = document.getElementById("result-link");
+
+    if (mode === "deal") {
+      label.textContent = notionUpdated
+        ? "✓ Deal added to Notion · Photo uploaded to CDN"
+        : "✓ Photo uploaded to CDN (Notion step pending)";
+    } else {
+      label.textContent = notionUpdated
+        ? "✓ Uploaded to CDN · Notion updated automatically"
+        : "✓ Upload Successful — CDN URL";
+    }
+
+    if (notionPageUrl) {
+      link.href = notionPageUrl;
+      link.style.display = "inline-block";
+    } else {
+      link.style.display = "none";
+    }
+  }
+
+  function hideResult() {
+    document.getElementById("result-box").classList.remove("visible");
+  }
+
+  function showError(msg) {
+    const box = document.getElementById("error-box");
+    box.textContent = "⚠ " + msg;
+    box.classList.add("visible");
+  }
+
+  function hideError() {
+    document.getElementById("error-box").classList.remove("visible");
+  }
+
+  async function copyUrl() {
+    const url = document.getElementById("result-url").textContent;
+    await navigator.clipboard.writeText(url);
+    const btn = document.getElementById("copy-btn");
+    btn.textContent = "Copied!";
+    btn.classList.add("copied");
+    setTimeout(() => {
+      btn.textContent = "Copy URL";
+      btn.classList.remove("copied");
+    }, 2000);
+  }
+
+  // ── Tab switching ────────────────────────────────────────────────────────
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const mode = tab.dataset.mode;
+      document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === tab));
+      document.querySelectorAll('.panel').forEach(p => {
+        p.classList.toggle('active', p.id === `panel-${mode}`);
+      });
+      hideResult();
+      hideError();
+    });
+  });
+
+  // ── Deal: file handling ──────────────────────────────────────────────────
+  let dealFile = null;
+
+  document.getElementById("deal-file-input").addEventListener("change", e => {
+    if (e.target.files[0]) handleDealFile(e.target.files[0]);
+  });
+
+  const dealDropZone = document.getElementById("deal-drop-zone");
+  dealDropZone.addEventListener("dragover",  e => { e.preventDefault(); dealDropZone.classList.add("drag-over"); });
+  dealDropZone.addEventListener("dragleave", () => dealDropZone.classList.remove("drag-over"));
+  dealDropZone.addEventListener("drop", e => {
+    e.preventDefault();
+    dealDropZone.classList.remove("drag-over");
+    if (e.dataTransfer.files[0]) handleDealFile(e.dataTransfer.files[0]);
+  });
+
+  function handleDealFile(file) {
+    if (!file.type.startsWith("image/")) { showError("Please select an image file."); return; }
+    if (file.size > 20 * 1024 * 1024) { showError("File is too large. Max 20MB."); return; }
+    dealFile = file;
+    hideError();
+
+    const reader = new FileReader();
+    reader.onload = e => { document.getElementById("deal-preview-thumb").src = e.target.result; };
+    reader.readAsDataURL(file);
+
+    document.getElementById("deal-preview-original").textContent = file.name;
+    document.getElementById("deal-preview-size").textContent = formatBytes(file.size);
+    document.getElementById("deal-preview-wrap").classList.add("visible");
+    dealDropZone.style.display = "none";
+
+    updateDealFilenamePreview();
+    checkDealReady();
+  }
+
+  function clearDealFile() {
+    dealFile = null;
+    document.getElementById("deal-file-input").value = "";
+    document.getElementById("deal-preview-wrap").classList.remove("visible");
+    document.getElementById("deal-preview-thumb").src = "";
+    dealDropZone.style.display = "block";
+    updateDealFilenamePreview();
+    checkDealReady();
+    hideResult();
+  }
+
+  function buildDealFilename() {
+    const name = document.getElementById("deal-name").value.trim();
+    if (!name) return null;
+    const slug = toSlug(name);
+    const today = new Date().toISOString().split("T")[0];
+    return `${slug}-${today}.jpg`;
+  }
+
+  function updateDealFilenamePreview() {
+    const filename = buildDealFilename();
+    const display = document.getElementById("deal-filename-display");
+    const newLabel = document.getElementById("deal-preview-new");
+    if (filename) {
+      display.textContent = filename;
+      display.classList.remove("empty");
+      if (dealFile) newLabel.textContent = "→ " + filename;
+    } else {
+      display.textContent = "Enter product name above";
+      display.classList.add("empty");
+      if (dealFile) newLabel.textContent = "→ (enter product name)";
+    }
+  }
+
+  function checkDealReady() {
+    const name = document.getElementById("deal-name").value.trim();
+    const ready = !!dealFile && !!name;
+    document.getElementById("deal-upload-btn").disabled = !ready;
+  }
+
+  ["deal-name", "deal-category", "deal-source", "deal-price",
+   "deal-original-price", "deal-url", "deal-take", "deal-featured"].forEach(id => {
+    document.getElementById(id).addEventListener("input",  () => { updateDealFilenamePreview(); checkDealReady(); });
+    document.getElementById(id).addEventListener("change", () => { updateDealFilenamePreview(); checkDealReady(); });
+  });
+
+  // ── Deal: upload + Notion create ─────────────────────────────────────────
+  async function handleDealUpload() {
+    const btn = document.getElementById("deal-upload-btn");
+    btn.disabled = true;
+    btn.textContent = "Uploading…";
+    btn.classList.add("loading");
+    hideResult();
+    hideError();
+
+    const filename = buildDealFilename();
+    try {
+      const fd = new FormData();
+      fd.append("mode", "deal");
+      fd.append("file", dealFile);
+      fd.append("filename", filename);
+      fd.append("name", document.getElementById("deal-name").value.trim());
+      fd.append("category", document.getElementById("deal-category").value);
+      fd.append("price", document.getElementById("deal-price").value);
+      fd.append("originalPrice", document.getElementById("deal-original-price").value);
+      fd.append("url", document.getElementById("deal-url").value.trim());
+      fd.append("source", document.getElementById("deal-source").value);
+      fd.append("myTake", document.getElementById("deal-take").value.trim());
+      fd.append("featured", document.getElementById("deal-featured").checked ? "true" : "false");
+      fd.append("status", "Live");
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: fd,
+        headers: { "x-upload-password": document.getElementById("password-input")?.value || "" }
+      });
+      const data = await res.json();
+      if (!res.ok && res.status !== 207) throw new Error(data.error || "Upload failed");
+
+      showResult(data.url, data.notionUpdated, data.notionPageUrl, "deal");
+      if (data.warning) showError(data.warning);
+    } catch (err) {
+      showError(err.message);
+    }
+
+    btn.disabled = false;
+    btn.textContent = "Add Deal to Notion";
+    btn.classList.remove("loading");
+  }
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  const today = new Date().toISOString().split("T")[0];
+  document.getElementById("print-date").value = today;
+
+  document.getElementById("password-input").focus();
+</script>
+
+</body>
+</html>
