@@ -1,0 +1,62 @@
+---
+// DealCard.astro — single deal in the workshop picks grid
+interface Deal {
+  id: string;
+  title: string;
+  slug: string;
+  photo: string;
+  category: string;
+  price: number | null;
+  originalPrice: number | null;
+  url: string;
+  source: string;
+  myTake?: string;
+  featured: boolean;
+}
+
+interface Props {
+  deal: Deal;
+}
+const { deal } = Astro.props;
+
+const fmt = (n: number | null) => (n == null ? '' : `$${n.toFixed(2).replace(/\.00$/, '')}`);
+const hasDiscount = deal.originalPrice != null && deal.price != null && deal.originalPrice > deal.price;
+const pct = hasDiscount
+  ? Math.round(((deal.originalPrice! - deal.price!) / deal.originalPrice!) * 100)
+  : 0;
+---
+
+<a
+  href={deal.url || '#'}
+  class:list={['deal-card', { 'is-featured': deal.featured }]}
+  target={deal.url ? '_blank' : undefined}
+  rel={deal.url ? 'noopener noreferrer sponsored' : undefined}
+>
+  <div class="deal-card-photo">
+    {deal.photo
+      ? <img src={deal.photo} alt={deal.title} loading="lazy" />
+      : <div class="photo-placeholder"><span>No Photo</span></div>
+    }
+    {deal.featured && <div class="make-card-featured-badge">Top Pick</div>}
+    {hasDiscount && (
+      <div class="deal-card-discount">−{pct}%</div>
+    )}
+  </div>
+  <div class="deal-card-body">
+    {deal.category && (
+      <div class="deal-card-category">{deal.category}</div>
+    )}
+    <div class="deal-card-title">{deal.title}</div>
+    {deal.myTake && <p class="deal-card-take">{deal.myTake}</p>}
+    <div class="deal-card-footer">
+      <div class="deal-card-prices">
+        {deal.price != null && <span class="deal-card-price">{fmt(deal.price)}</span>}
+        {hasDiscount && <span class="deal-card-original">{fmt(deal.originalPrice)}</span>}
+      </div>
+      <span class="deal-card-cta">View Deal →</span>
+    </div>
+    {deal.source && (
+      <div class="deal-card-source">via {deal.source}</div>
+    )}
+  </div>
+</a>

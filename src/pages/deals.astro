@@ -1,0 +1,60 @@
+---
+// deals.astro — curated 3D-printing gear + current deals worth knowing about.
+// Not linked from header/footer; accessible via direct URL only for now.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import DealCard from '../components/DealCard.astro';
+import { getDeals } from '../lib/notion.js';
+
+const deals = await getDeals();
+
+const featured = deals.filter(d => d.featured);
+const rest = deals.filter(d => !d.featured);
+const ordered = [...featured, ...rest];
+---
+
+<BaseLayout
+  title="Workshop Picks – MattMakes3D"
+  description="Curated 3D printing gear I actually use, plus deals worth knowing about."
+>
+  <!-- ── TITLE BAND ────────────────────────────────────────────── -->
+  <section class="hero-band">
+    <div class="hero-band-inner" style="display:block; padding-bottom: 28px;">
+      <div class="fade-up fade-up-1">
+        <span class="hero-eyebrow">The Gear Bench</span>
+        <h1 style="margin-top:12px;">Workshop<em>Picks.</em></h1>
+        <p class="hero-sub">
+          Stuff I actually use, and deals worth knowing about. Updated as I find them.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── DEALS GRID ─────────────────────────────────────────────── -->
+  <section class="site-section fade-up fade-up-2">
+    {ordered.length === 0 ? (
+      <div class="deals-empty">
+        <strong>The bench is empty.</strong>
+        Workshop picks are coming soon — check back for current deals on filament, tools, and upgrades.
+      </div>
+    ) : (
+      <>
+        <div class="section-heading">
+          <span class="eyebrow">Current Picks</span>
+          <h2 class="section-heading-title">
+            {ordered.length} <em>Pick{ordered.length === 1 ? '' : 's'}</em>
+          </h2>
+        </div>
+        <div class="deals-grid">
+          {ordered.map((deal) => <DealCard deal={deal} />)}
+        </div>
+      </>
+    )}
+
+    <!-- Affiliate disclosure -->
+    <p style="margin-top: 48px; font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-2); letter-spacing: 0.04em; line-height: 1.6; max-width: 60ch;">
+      Some links may be affiliate links — I may earn a small commission if you
+      buy through them, at no extra cost to you. I only recommend gear I'd buy
+      (or have bought) myself.
+    </p>
+  </section>
+</BaseLayout>

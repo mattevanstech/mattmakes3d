@@ -96,6 +96,77 @@ export async function getPrints() {
   });
 }
 
+// ── DEALS DATABASE ──────────────────────────────────────────────────────────
+// The deals page (/deals) pulls from a separate Notion database from prints.
+// Created on 2026-05-27 via the Notion MCP. Schema:
+//   Name (Title), Photo (Files), Category (Select), Price (Number $),
+//   Original Price (Number $), URL (URL), Source (Select), Status (Select),
+//   My Take (Rich text), Featured (Checkbox)
+const DEALS_DATABASE_ID = "632deb71-b945-4967-a8fe-93977d4b2e7d";
+
+/**
+ * Query the deals database. Returns deals with Status = "Live", featured first,
+ * then newest first. Returns [] if the DB ID hasn't been configured or the API
+ * call fails (e.g., the integration hasn't been invited to the database yet).
+ */
+export async function getDeals() {
+  if (!DEALS_DATABASE_ID) return [];
+
+  const url = `https://api.notion.com/v1/databases/${DEALS_DATABASE_ID}/query`;
+  const body = {
+    filter: {
+      property: "Status",
+      select: { equals: "Live" },
+    },
+    sorts: [
+      { property: "Featured",      direction: "descending" },
+      { timestamp: "created_time", direction: "descending" },
+    ],
+  };
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${NOTION_TOKEN}`,
+      "Content-Type": "application/json",
+      "Notion-Version": NOTION_VERSION,
+    },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    console.warn(`getDeals: Notion API ${response.status} ${response.statusText}`);
+    return [];
+  }
+  const data = await response.json();
+
+  return data.results.map((page) => {
+    const props = page.properties;
+
+    const title = props["Name"]?.title?.[0]?.plain_text ?? "";
+
+    let photo = "";
+    const photoFiles = props["Photo"]?.files ?? [];
+    if (photoFiles.length > 0) {
+      const file = photoFiles[0];
+      photo = file.type === "external" ? file.external.url : (file.file?.url ?? "");
+    }
+
+    return {
+      id: page.id,
+      title,
+      slug: toSlug(title),
+      photo,
+      category: props["Category"]?.select?.name ?? "",
+      price: props["Price"]?.number ?? null,
+      originalPrice: props["Original Price"]?.number ?? null,
+      url: props["URL"]?.url ?? "",
+      source: props["Source"]?.select?.name ?? "",
+      myTake: props["My Take"]?.rich_text?.map(r => r.plain_text).join("") ?? "",
+      featured: props["Featured"]?.checkbox ?? false,
+    };
+  });
+}
+
 /**
  * Fetch items currently in the print queue (Status = "In Print Queue").
  */
