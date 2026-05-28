@@ -8,14 +8,16 @@ import { ViewTransitions } from 'astro:transitions';
 interface Props {
   title?: string;
   description?: string;
-  currentPage?: 'home' | 'archive' | 'queue' | 'about';
+  // Pages NOT in the main nav (e.g. /deals, /prints/[slug]) should omit this
+  // or pass 'none' so no nav link is highlighted.
+  currentPage?: 'home' | 'archive' | 'queue' | 'about' | 'none';
   ogImage?: string;
 }
 
 const {
   title = 'MattMakes3D – Fresh Off The Bed',
   description = "A showcase of Matt Evans' latest 3D prints. Models, makes, and everything fresh off the print bed.",
-  currentPage = 'home',
+  currentPage = 'none',
   ogImage = 'https://mattmakes3d.com/assets/og-image.png',
 } = Astro.props;
 ---

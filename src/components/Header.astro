@@ -1,9 +1,9 @@
 ---
 // Header.astro — shared site header (logo · nav · socials · theme toggle · hamburger)
 interface Props {
-  currentPage?: 'home' | 'archive' | 'queue' | 'about';
+  currentPage?: 'home' | 'archive' | 'queue' | 'about' | 'none';
 }
-const { currentPage = 'home' } = Astro.props;
+const { currentPage = 'none' } = Astro.props;
 
 const isActive = (id: string) => currentPage === id;
 ---
@@ -126,13 +126,14 @@ const isActive = (id: string) => currentPage === id;
   // ── Active nav state ──────────────────────────────────────────────────────
   // The header uses transition:persist so it doesn't re-render on navigation —
   // we have to update the .active class manually on each page change.
+  // Pages that aren't in the main nav (e.g. /deals, /links) leave everything un-highlighted.
   function updateActiveNav() {
     const path = window.location.pathname;
-    // Map first path segment to nav id. "/" → home, "/archive/..." → archive, etc.
-    let active = 'home';
-    if (path.startsWith('/archive')) active = 'archive';
-    else if (path.startsWith('/queue')) active = 'queue';
-    else if (path.startsWith('/about')) active = 'about';
+    let active = null;
+    if (path === '/' || path === '/index.html') active = 'home';
+    else if (path.startsWith('/archive')) active = 'archive';
+    else if (path.startsWith('/queue'))   active = 'queue';
+    else if (path.startsWith('/about'))   active = 'about';
 
     const navLinks = document.querySelectorAll('.site-nav a, .mobile-nav a');
     navLinks.forEach((a) => {
