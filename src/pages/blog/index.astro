@@ -1,0 +1,63 @@
+---
+// blog/index.astro — list of all published posts from Ghost (digitalpress.blog).
+// Hidden from header/footer for now; accessible via direct URL.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BlogCard from '../../components/BlogCard.astro';
+import { getPosts } from '../../lib/ghost.js';
+
+const posts = await getPosts();
+
+// First post is treated as "featured" hero (larger card)
+const [hero, ...rest] = posts;
+---
+
+<BaseLayout
+  title="Blog – MattMakes3D"
+  description="Thoughts, builds, and lessons from the workshop."
+>
+  <!-- ── TITLE BAND ────────────────────────────────────────────── -->
+  <section class="hero-band">
+    <div class="hero-band-inner" style="display:block; padding-bottom: 28px;">
+      <div class="fade-up fade-up-1">
+        <span class="hero-eyebrow">The Workshop Journal</span>
+        <h1 style="margin-top:12px;">Notes<em>& Builds.</em></h1>
+        <p class="hero-sub">
+          Thoughts, builds, and lessons from the workshop. Updated when there's
+          something worth writing down.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── POSTS ──────────────────────────────────────────────────── -->
+  <section class="site-section fade-up fade-up-2">
+    {posts.length === 0 ? (
+      <div class="deals-empty">
+        <strong>Nothing posted yet.</strong>
+        Check back soon — the first post is in the works.
+      </div>
+    ) : (
+      <>
+        {hero && (
+          <div class="blog-hero-wrap">
+            <BlogCard post={hero} featured />
+          </div>
+        )}
+
+        {rest.length > 0 && (
+          <>
+            <div class="section-heading" style="margin-top: 56px;">
+              <span class="eyebrow">More Posts</span>
+              <h2 class="section-heading-title">
+                {rest.length} <em>{rest.length === 1 ? 'Post' : 'Posts'}</em>
+              </h2>
+            </div>
+            <div class="blog-grid">
+              {rest.map((post) => <BlogCard post={post} />)}
+            </div>
+          </>
+        )}
+      </>
+    )}
+  </section>
+</BaseLayout>

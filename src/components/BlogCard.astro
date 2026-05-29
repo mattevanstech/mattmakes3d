@@ -1,0 +1,55 @@
+---
+// BlogCard.astro — single post in the blog index grid
+interface Post {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  featureImage: string;
+  publishedAt: string;
+  readingTime: number;
+  primaryTag: { name: string; slug: string } | null;
+  primaryAuthor: { name: string; profileImage: string } | null;
+}
+
+interface Props {
+  post: Post;
+  featured?: boolean;
+}
+
+const { post, featured = false } = Astro.props;
+
+const formattedDate = post.publishedAt
+  ? new Date(post.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  : '';
+---
+
+<a
+  href={`/blog/${post.slug}`}
+  class:list={['blog-card', { 'is-featured': featured }]}
+  aria-label={`Read: ${post.title}`}
+>
+  <div class="blog-card-photo">
+    {post.featureImage
+      ? <img src={post.featureImage} alt={post.title} loading="lazy" />
+      : <div class="photo-placeholder"><span>No Image</span></div>
+    }
+    {post.primaryTag && (
+      <div class="blog-card-tag">{post.primaryTag.name}</div>
+    )}
+  </div>
+  <div class="blog-card-body">
+    <div class="blog-card-meta">
+      {formattedDate && <span>{formattedDate}</span>}
+      {post.readingTime > 0 && (
+        <>
+          <span class="sep">·</span>
+          <span>{post.readingTime} min read</span>
+        </>
+      )}
+    </div>
+    <h3 class="blog-card-title">{post.title}</h3>
+    {post.excerpt && <p class="blog-card-excerpt">{post.excerpt}</p>}
+    <span class="blog-card-cta">Read more →</span>
+  </div>
+</a>

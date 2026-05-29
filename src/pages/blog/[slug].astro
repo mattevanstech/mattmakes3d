@@ -1,0 +1,100 @@
+---
+// blog/[slug].astro — single blog post page rendered from Ghost HTML body.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getPosts, getPost } from '../../lib/ghost.js';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+
+// Re-fetch the full post for the HTML body (the index call only requested metadata).
+const full = await getPost(post.slug) ?? post;
+
+const formattedDate = full.publishedAt
+  ? new Date(full.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+  : '';
+
+const ogImage = full.featureImage || 'https://mattmakes3d.com/assets/og-image.png';
+const ogDescription = full.excerpt || `${full.title} — read on MattMakes3D.com.`;
+---
+
+<BaseLayout
+  title={`${full.title} — MattMakes3D`}
+  description={ogDescription}
+  ogImage={ogImage}
+>
+  <article class="blog-post fade-up fade-up-1">
+
+    <!-- ── HEADER ─────────────────────────────────────────────── -->
+    <header class="blog-post-header">
+      <a href="/blog" class="blog-post-back">
+        <span>←</span> Back to all posts
+      </a>
+
+      {full.primaryTag && (
+        <div class="blog-post-eyebrow">
+          <span class="eyebrow">{full.primaryTag.name}</span>
+        </div>
+      )}
+
+      <h1 class="blog-post-title">{full.title}</h1>
+
+      <div class="blog-post-meta">
+        {full.primaryAuthor && (
+          <span class="blog-post-author">
+            {full.primaryAuthor.profileImage && (
+              <img src={full.primaryAuthor.profileImage} alt={full.primaryAuthor.name} class="blog-post-author-avatar" />
+            )}
+            <span>{full.primaryAuthor.name}</span>
+          </span>
+        )}
+        {formattedDate && (
+          <>
+            <span class="sep">·</span>
+            <span>{formattedDate}</span>
+          </>
+        )}
+        {full.readingTime > 0 && (
+          <>
+            <span class="sep">·</span>
+            <span>{full.readingTime} min read</span>
+          </>
+        )}
+      </div>
+    </header>
+
+    <!-- ── FEATURE IMAGE ──────────────────────────────────────── -->
+    {full.featureImage && (
+      <figure class="blog-post-feature">
+        <img src={full.featureImage} alt={full.featureImageAlt || full.title} />
+        {full.featureImageCaption && (
+          <figcaption set:html={full.featureImageCaption} />
+        )}
+      </figure>
+    )}
+
+    <!-- ── BODY ──────────────────────────────────────────────── -->
+    <div class="blog-post-body" set:html={full.html} />
+
+    <!-- ── FOOTER ────────────────────────────────────────────── -->
+    <footer class="blog-post-footer">
+      {full.tags.length > 0 && (
+        <div class="blog-post-tags">
+          {full.tags.map((tag) => (
+            <span class="blog-post-tag">#{tag.name}</span>
+          ))}
+        </div>
+      )}
+      <a href="/blog" class="blog-post-back">
+        <span>←</span> Back to all posts
+      </a>
+    </footer>
+
+  </article>
+</BaseLayout>
