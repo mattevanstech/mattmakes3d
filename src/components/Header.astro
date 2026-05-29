@@ -1,7 +1,7 @@
 ---
 // Header.astro — shared site header (logo · nav · socials · theme toggle · hamburger)
 interface Props {
-  currentPage?: 'home' | 'archive' | 'queue' | 'about' | 'none';
+  currentPage?: 'home' | 'archive' | 'queue' | 'blog' | 'about' | 'none';
 }
 const { currentPage = 'none' } = Astro.props;
 
@@ -20,6 +20,7 @@ const isActive = (id: string) => currentPage === id;
         <a href="/"        class:list={[{ active: isActive('home')    }]}>Latest</a>
         <a href="/archive" class:list={[{ active: isActive('archive') }]}>Archive</a>
         <a href="/queue"   class:list={[{ active: isActive('queue')   }]}>Queue</a>
+        <a href="/blog"    class:list={[{ active: isActive('blog')    }]}>Workshop Journal</a>
         <a href="/about"   class:list={[{ active: isActive('about')   }]}>About</a>
       </nav>
 
@@ -67,6 +68,7 @@ const isActive = (id: string) => currentPage === id;
   <a href="/"        class:list={[{ active: isActive('home')    }]}>Latest</a>
   <a href="/archive" class:list={[{ active: isActive('archive') }]}>Archive</a>
   <a href="/queue"   class:list={[{ active: isActive('queue')   }]}>Queue</a>
+  <a href="/blog"    class:list={[{ active: isActive('blog')    }]}>Workshop Journal</a>
   <a href="/about"   class:list={[{ active: isActive('about')   }]}>About</a>
   <button class="theme-toggle" id="theme-toggle-mobile" aria-label="Toggle dark mode" type="button" style="margin-top:8px;">
     <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -133,6 +135,7 @@ const isActive = (id: string) => currentPage === id;
     if (path === '/' || path === '/index.html') active = 'home';
     else if (path.startsWith('/archive')) active = 'archive';
     else if (path.startsWith('/queue'))   active = 'queue';
+    else if (path.startsWith('/blog'))    active = 'blog';
     else if (path.startsWith('/about'))   active = 'about';
 
     const navLinks = document.querySelectorAll('.site-nav a, .mobile-nav a');
@@ -142,6 +145,7 @@ const isActive = (id: string) => currentPage === id;
         (active === 'home'    && href === '/') ||
         (active === 'archive' && href === '/archive') ||
         (active === 'queue'   && href === '/queue') ||
+        (active === 'blog'    && href === '/blog') ||
         (active === 'about'   && href === '/about');
       a.classList.toggle('active', isMatch);
     });
