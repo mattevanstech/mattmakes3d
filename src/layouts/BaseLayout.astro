@@ -18,7 +18,7 @@ const {
   title = 'MattMakes3D – Fresh Off The Bed',
   description = "A showcase of Matt Evans' latest 3D prints. Models, makes, and everything fresh off the print bed.",
   currentPage = 'none',
-  ogImage = 'https://mattmakes3d.com/assets/og-image.png',
+  ogImage = 'https://mattmakes3d.com/assets/og-card.png',
 } = Astro.props;
 ---
 
@@ -35,19 +35,27 @@ const {
   <meta name="author" content="Matt Evans" />
   <link rel="canonical" href={`https://mattmakes3d.com${Astro.url.pathname}`} />
 
+  <!-- Theme color (browser chrome, iOS Safari, PWA) -->
+  <meta name="theme-color" content="#F6F1E6" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0F1730" media="(prefers-color-scheme: dark)" />
+
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content={title} />
   <meta property="og:description" content={description} />
+  <meta property="og:url" content={`https://mattmakes3d.com${Astro.url.pathname}`} />
+  <meta property="og:site_name" content="MattMakes3D" />
   <meta property="og:image" content={ogImage} />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content={title} />
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content={title} />
   <meta name="twitter:description" content={description} />
   <meta name="twitter:image" content={ogImage} />
+  <meta name="twitter:image:alt" content={title} />
 
   <!-- Fonts: Space Grotesk (display + UI) · Newsreader (italic accent) · IBM Plex Mono (mono) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />

@@ -26,9 +26,10 @@ const ogDescription = [
   'See all my 3D prints at MattMakes3D.com.',
 ].filter(Boolean).join(' · ');
 
+// Print pages: use the print photo as the OG card; fall back to the brand card.
 const ogImage = print.photo?.startsWith('http')
   ? print.photo
-  : 'https://mattmakes3d.com/assets/og-image.png';
+  : 'https://mattmakes3d.com/assets/og-card.png';
 ---
 
 <BaseLayout

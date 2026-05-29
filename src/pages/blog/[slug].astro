@@ -20,7 +20,9 @@ const formattedDate = full.publishedAt
   ? new Date(full.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
   : '';
 
-const ogImage = full.featureImage || 'https://mattmakes3d.com/assets/og-image.png';
+// Blog posts: prefer the post's feature image as the OG card; fall back to the
+// brand OG card if the post doesn't have one.
+const ogImage = full.featureImage || 'https://mattmakes3d.com/assets/og-card.png';
 const ogDescription = full.excerpt || `${full.title} — read on MattMakes3D.com.`;
 ---
 
