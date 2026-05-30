@@ -455,6 +455,21 @@
       cursor: pointer;
     }
 
+    /* Reset button */
+    .reset-btn {
+      display: block;
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: #64748b;
+      font-size: 0.78rem;
+      padding: 0.6rem;
+      margin-top: 0.5rem;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+    .reset-btn:hover { color: #a5b4fc; }
+
     /* Result link */
     .result-link {
       display: inline-block;
@@ -533,12 +548,41 @@
         <input type="date" id="print-date" />
       </div>
 
+      <div class="field-row">
+        <div class="field">
+          <label for="print-source">Source <span style="text-transform:none;color:#475569;font-weight:400;">(opt)</span></label>
+          <input type="text" id="print-source" placeholder="e.g. MakerWorld" list="print-source-options" />
+          <datalist id="print-source-options">
+            <option value="MakerWorld"></option>
+            <option value="Printables"></option>
+            <option value="Thingiverse"></option>
+            <option value="Cults3D"></option>
+            <option value="MyMiniFactory"></option>
+            <option value="Etsy"></option>
+            <option value="Original Design"></option>
+          </datalist>
+        </div>
+        <div class="field">
+          <label for="print-featured" style="margin-bottom:0.5rem;">Featured <span style="text-transform:none;color:#475569;font-weight:400;">(opt)</span></label>
+          <div class="checkbox-row" style="margin-top:0.7rem;margin-bottom:0;">
+            <input type="checkbox" id="print-featured" />
+            <label for="print-featured">Mark as Featured</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="print-model-url">Model Source URL <span style="text-transform:none;color:#475569;font-weight:400;">(opt)</span></label>
+        <input type="url" id="print-model-url" placeholder="https://makerworld.com/..." />
+      </div>
+
       <div class="filename-preview">
         <span class="label">Filename</span>
         <span class="value empty" id="filename-display">Enter model name and date above</span>
       </div>
 
       <button class="submit-btn" id="upload-btn" onclick="handleUpload()" disabled>Upload to CDN</button>
+      <button class="reset-btn" type="button" onclick="resetPrintForm()">Reset form</button>
     </div>
 
     <!-- ─── DEAL PANEL ──────────────────────────────────────── -->
@@ -624,6 +668,7 @@
       </div>
 
       <button class="submit-btn" id="deal-upload-btn" onclick="handleDealUpload()" disabled>Add Deal to Notion</button>
+      <button class="reset-btn" type="button" onclick="resetDealForm()">Reset form</button>
     </div>
 
     <!-- Shared result/error -->
@@ -820,6 +865,9 @@
         formData.append("filename", filename);
         formData.append("modelName", document.getElementById("model-name").value.trim());
         formData.append("printDate", document.getElementById("print-date").value);
+        formData.append("source",    document.getElementById("print-source").value.trim());
+        formData.append("modelUrl",  document.getElementById("print-model-url").value.trim());
+        formData.append("featured",  document.getElementById("print-featured").checked ? "true" : "false");
 
         const res = await fetch("/api/upload", {
           method: "POST",
@@ -828,8 +876,9 @@
         });
 
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Upload failed");
-        showResult(data.url, data.notionUpdated, null, "print");
+        if (!res.ok && res.status !== 207) throw new Error(data.error || "Upload failed");
+        showResult(data.url, data.notionUpdated, data.notionPageUrl, "print", data.notionAction);
+        if (data.warning) showError(data.warning);
       } catch (err) {
         showError(err.message);
       }
@@ -840,7 +889,7 @@
     btn.classList.remove("loading");
   }
 
-  function showResult(url, notionUpdated, notionPageUrl, mode) {
+  function showResult(url, notionUpdated, notionPageUrl, mode, notionAction) {
     document.getElementById("result-url").textContent = url;
     document.getElementById("result-box").classList.add("visible");
     document.getElementById("copy-btn").textContent = "Copy URL";
@@ -852,10 +901,16 @@
       label.textContent = notionUpdated
         ? "✓ Deal added to Notion · Photo uploaded to CDN"
         : "✓ Photo uploaded to CDN (Notion step pending)";
+    } else if (mode === "print") {
+      if (notionAction === "created") {
+        label.textContent = "✓ New print created in Notion · Photo uploaded to CDN";
+      } else if (notionAction === "updated") {
+        label.textContent = "✓ Existing print updated in Notion · Photo uploaded to CDN";
+      } else {
+        label.textContent = "✓ Upload Successful — CDN URL";
+      }
     } else {
-      label.textContent = notionUpdated
-        ? "✓ Uploaded to CDN · Notion updated automatically"
-        : "✓ Upload Successful — CDN URL";
+      label.textContent = "✓ Upload Successful — CDN URL";
     }
 
     if (notionPageUrl) {
@@ -1026,6 +1081,56 @@
     }
 
     btn.disabled = false;
+    btn.textContent = "Add Deal to Notion";
+    btn.classList.remove("loading");
+  }
+
+  // ── Reset handlers ────────────────────────────────────────────────────────
+  function resetPrintForm() {
+    // Clear file
+    selectedFile = null;
+    document.getElementById("file-input").value = "";
+    document.getElementById("preview-wrap").classList.remove("visible");
+    document.getElementById("preview-thumb").src = "";
+    dropZone.style.display = "block";
+    // Clear fields (date resets to today)
+    document.getElementById("model-name").value = "";
+    document.getElementById("print-date").value = new Date().toISOString().split("T")[0];
+    document.getElementById("print-source").value = "";
+    document.getElementById("print-model-url").value = "";
+    document.getElementById("print-featured").checked = false;
+    // Reset UI
+    updateFilenamePreview();
+    checkReady();
+    hideResult();
+    hideError();
+    const btn = document.getElementById("upload-btn");
+    btn.textContent = "Upload to CDN";
+    btn.classList.remove("loading");
+  }
+
+  function resetDealForm() {
+    // Clear file
+    dealFile = null;
+    document.getElementById("deal-file-input").value = "";
+    document.getElementById("deal-preview-wrap").classList.remove("visible");
+    document.getElementById("deal-preview-thumb").src = "";
+    dealDropZone.style.display = "block";
+    // Clear fields
+    document.getElementById("deal-name").value = "";
+    document.getElementById("deal-category").value = "";
+    document.getElementById("deal-source").value = "";
+    document.getElementById("deal-price").value = "";
+    document.getElementById("deal-original-price").value = "";
+    document.getElementById("deal-url").value = "";
+    document.getElementById("deal-take").value = "";
+    document.getElementById("deal-featured").checked = false;
+    // Reset UI
+    updateDealFilenamePreview();
+    checkDealReady();
+    hideResult();
+    hideError();
+    const btn = document.getElementById("deal-upload-btn");
     btn.textContent = "Add Deal to Notion";
     btn.classList.remove("loading");
   }

@@ -94,8 +94,22 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
       });
       return res.json({ url: cdnUrl, mode: 'deal', notionUpdated: !!pageUrl, notionPageUrl: pageUrl });
     } else {
-      const notionUpdated = await updateNotionPhoto(req.body.modelName, req.body.printDate, cdnUrl, filename);
-      return res.json({ url: cdnUrl, mode: 'print', notionUpdated });
+      const result = await upsertNotionPrint({
+        modelName: req.body.modelName,
+        printDate: req.body.printDate,
+        source:    req.body.source,
+        modelUrl:  req.body.modelUrl,
+        featured:  req.body.featured === 'true' || req.body.featured === '1',
+        cdnUrl,
+        filename,
+      });
+      return res.json({
+        url: cdnUrl,
+        mode: 'print',
+        notionUpdated: !!result.pageUrl,
+        notionAction: result.action,
+        notionPageUrl: result.pageUrl,
+      });
     }
   } catch (err) {
     console.warn('Notion step failed:', err.message);
@@ -128,9 +142,15 @@ async function sftpUpload(buffer, filename) {
   }
 }
 
-// ── Print log: PATCH existing page ─────────────────────────────────────────
-async function updateNotionPhoto(modelName, printDate, cdnUrl, filename) {
-  if (!NOTION_TOKEN || !modelName || !printDate) return false;
+// ── Print log: UPSERT (create-if-missing, patch-if-exists) ─────────────────
+async function upsertNotionPrint(p) {
+  if (!NOTION_TOKEN || !p.modelName || !p.printDate) {
+    throw new Error('Missing NOTION_TOKEN, modelName, or printDate.');
+  }
+
+  const photoProp = {
+    files: [{ type: 'external', name: p.filename, external: { url: p.cdnUrl } }],
+  };
 
   const queryRes = await fetch(
     `https://api.notion.com/v1/databases/${NOTION_DATABASE_ID}/query`,
@@ -140,37 +160,66 @@ async function updateNotionPhoto(modelName, printDate, cdnUrl, filename) {
       body: JSON.stringify({
         filter: {
           and: [
-            { property: 'Model Name', title: { equals: modelName } },
-            { property: 'Print Date', date:  { equals: printDate } },
+            { property: 'Model Name', title: { equals: p.modelName } },
+            { property: 'Print Date', date:  { equals: p.printDate } },
           ],
         },
       }),
     }
   );
-
   const queryData = await queryRes.json();
-  if (!queryData.results?.length) {
-    console.warn(`Notion: no page found for "${modelName}" on ${printDate}`);
-    return false;
+  const existing = queryData.results?.[0];
+
+  if (existing) {
+    const properties = {
+      Photo: photoProp,
+      Status: { status: { name: 'Done' } },
+      'Uploaded to Print Log': { checkbox: true },
+    };
+    if (p.source)   properties['Source']           = { rich_text: [{ text: { content: p.source } }] };
+    if (p.modelUrl) properties['Model Source URL'] = { url: p.modelUrl };
+    if (p.featured) properties['Featured']         = { checkbox: true };
+
+    const patchRes = await fetch(`https://api.notion.com/v1/pages/${existing.id}`, {
+      method: 'PATCH',
+      headers: NOTION_HEADERS,
+      body: JSON.stringify({ properties }),
+    });
+    if (!patchRes.ok) {
+      const err = await patchRes.json().catch(() => ({}));
+      throw new Error(err.message || `Notion ${patchRes.status}`);
+    }
+    const page = await patchRes.json();
+    console.log(`✓ Notion print updated: "${p.modelName}"`);
+    return { action: 'updated', pageUrl: page.url || null };
   }
 
-  const pageId = queryData.results[0].id;
-  const patchRes = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
-    method: 'PATCH',
+  const properties = {
+    'Model Name': { title: [{ text: { content: p.modelName } }] },
+    'Print Date': { date: { start: p.printDate } },
+    Photo:       photoProp,
+    Status:      { status: { name: 'Done' } },
+    'Uploaded to Print Log': { checkbox: true },
+    Featured:    { checkbox: !!p.featured },
+  };
+  if (p.source)   properties['Source']           = { rich_text: [{ text: { content: p.source } }] };
+  if (p.modelUrl) properties['Model Source URL'] = { url: p.modelUrl };
+
+  const createRes = await fetch('https://api.notion.com/v1/pages', {
+    method: 'POST',
     headers: NOTION_HEADERS,
     body: JSON.stringify({
-      properties: {
-        Photo: { files: [{ type: 'external', name: filename, external: { url: cdnUrl } }] },
-      },
+      parent: { database_id: NOTION_DATABASE_ID },
+      properties,
     }),
   });
-
-  if (!patchRes.ok) {
-    const err = await patchRes.json().catch(() => ({}));
-    throw new Error(err.message || `Notion ${patchRes.status}`);
+  if (!createRes.ok) {
+    const err = await createRes.json().catch(() => ({}));
+    throw new Error(err.message || `Notion ${createRes.status}`);
   }
-  console.log(`✓ Notion print updated: "${modelName}"`);
-  return true;
+  const page = await createRes.json();
+  console.log(`✓ Notion print created: "${p.modelName}" → ${page.url}`);
+  return { action: 'created', pageUrl: page.url || null };
 }
 
 // ── Deals: CREATE new page ─────────────────────────────────────────────────
