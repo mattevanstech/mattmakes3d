@@ -8,18 +8,37 @@ const { currentPage = 'none' } = Astro.props;
 const isActive = (id: string) => currentPage === id;
 ---
 
+<!-- Secret "my other sites" bar — drops down above the header via the chevron next to the logo -->
+<div class="network-bar" id="networkBar" aria-hidden="true">
+  <div class="network-bar-inner">
+    <span class="network-bar-label">Also&nbsp;by&nbsp;Matt</span>
+    <a class="network-site" href="https://mattevanstech.com" target="_blank" rel="noopener noreferrer" title="Matt Evans Tech">
+      <img src="/assets/mattevanstech-logo.svg" alt="Matt Evans Tech" />
+    </a>
+    <a class="network-site" href="https://tridenttracker.com" target="_blank" rel="noopener noreferrer" title="Trident Tracker">
+      <img src="/assets/tridenttracker-logo.png" alt="Trident Tracker" />
+    </a>
+  </div>
+</div>
+
 <header class="site-header" transition:persist>
   <div class="header-inner">
-    <a href="/" class="site-logo" aria-label="MattMakes3D — Home">
-      <img class="logo-light" src="/assets/mattmakes3d-logo.png" alt="MattMakes3D" />
-      <img class="logo-dark"  src="/assets/mattmakes3d-logo-dark.png" alt="MattMakes3D" />
-    </a>
+    <div class="site-logo-wrap">
+      <a href="/" class="site-logo" aria-label="MattMakes3D — Home">
+        <img class="logo-light" src="/assets/mattmakes3d-logo.png" alt="MattMakes3D" />
+        <img class="logo-dark"  src="/assets/mattmakes3d-logo-dark.png" alt="MattMakes3D" />
+      </a>
+      <button class="network-toggle" id="networkToggle" aria-label="My other sites" aria-expanded="false" title="My other sites" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+    </div>
 
     <div class="site-nav-cluster">
       <nav class="site-nav" aria-label="Primary">
         <a href="/"        class:list={[{ active: isActive('home')    }]}>Latest</a>
         <a href="/archive" class:list={[{ active: isActive('archive') }]}>Archive</a>
-        <a href="/queue"   class:list={[{ active: isActive('queue')   }]}>Queue</a>
         <a href="/blog"    class:list={[{ active: isActive('blog')    }]}>Workshop Journal</a>
         <a href="/about"   class:list={[{ active: isActive('about')   }]}>About</a>
       </nav>
@@ -67,7 +86,6 @@ const isActive = (id: string) => currentPage === id;
 <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile">
   <a href="/"        class:list={[{ active: isActive('home')    }]}>Latest</a>
   <a href="/archive" class:list={[{ active: isActive('archive') }]}>Archive</a>
-  <a href="/queue"   class:list={[{ active: isActive('queue')   }]}>Queue</a>
   <a href="/blog"    class:list={[{ active: isActive('blog')    }]}>Workshop Journal</a>
   <a href="/about"   class:list={[{ active: isActive('about')   }]}>About</a>
   <button class="theme-toggle" id="theme-toggle-mobile" aria-label="Toggle dark mode" type="button" style="margin-top:8px;">
@@ -124,6 +142,50 @@ const isActive = (id: string) => currentPage === id;
   document.addEventListener('astro:page-load', attachNavLinks);
   document.addEventListener('astro:before-preparation', closeMenu);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
+
+  // ── Secret "other sites" network bar ──────────────────────────────────────
+  function setNetworkBar(open: boolean) {
+    const bar = document.getElementById('networkBar');
+    const toggle = document.getElementById('networkToggle');
+    if (!bar || !toggle) return;
+    bar.classList.toggle('open', open);
+    toggle.classList.toggle('open', open);
+    toggle.setAttribute('aria-expanded', String(open));
+    bar.setAttribute('aria-hidden', String(!open));
+    // The bar lives above a sticky header — bring it into view when opened.
+    if (open && window.scrollY > 10) window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function closeNetworkBar() { setNetworkBar(false); }
+
+  function initNetworkBar() {
+    const toggle = document.getElementById('networkToggle');
+    if (!toggle || (toggle as HTMLElement).dataset.bound) return;
+    (toggle as HTMLElement).dataset.bound = '1';
+    toggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const bar = document.getElementById('networkBar');
+      setNetworkBar(!bar?.classList.contains('open'));
+    });
+  }
+  initNetworkBar();
+  document.addEventListener('astro:page-load', initNetworkBar);
+  document.addEventListener('astro:before-preparation', closeNetworkBar);
+
+  // Bind document-level dismissers once (document persists across navigations).
+  if (!(window as any).__netbarBound) {
+    (window as any).__netbarBound = true;
+    document.addEventListener('click', (e) => {
+      const bar = document.getElementById('networkBar');
+      const toggle = document.getElementById('networkToggle');
+      if (bar?.classList.contains('open') &&
+          !bar.contains(e.target as Node) &&
+          !toggle?.contains(e.target as Node)) {
+        closeNetworkBar();
+      }
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeNetworkBar(); });
+  }
 
   // ── Active nav state ──────────────────────────────────────────────────────
   // The header uses transition:persist so it doesn't re-render on navigation —
