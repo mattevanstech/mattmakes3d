@@ -95,6 +95,37 @@ async function getChannels(ctx: Ctx, token: string) {
 		.map((c: any) => ({ id: c.id, service: c.service, name: c.name ?? c.displayName }));
 }
 
+/**
+ * Read the account's Buffer posts and return a map of the /prints/<segment>
+ * link found in each → earliest post timestamp. Used to retroactively mark
+ * prints that were already shared (even outside this plugin). The <segment>
+ * may be a slug or an internal id, so callers match on both.
+ */
+async function getBufferShares(ctx: Ctx, token: string): Promise<Record<string, string>> {
+	const orgId = await getOrgId(ctx, token);
+	const data = await bufferGraphQL(
+		ctx,
+		token,
+		`query($o: OrganizationId!) {
+			posts(input: { organizationId: $o }, first: 100) {
+				edges { node { text sentAt createdAt } }
+			}
+		}`,
+		{ o: orgId },
+	);
+	const out: Record<string, string> = {};
+	for (const edge of data?.posts?.edges ?? []) {
+		const node = edge.node;
+		const matches = (node.text ?? "").match(/\/prints\/([A-Za-z0-9-]+)/g) ?? [];
+		const ts = node.sentAt ?? node.createdAt ?? new Date().toISOString();
+		for (const m of matches) {
+			const seg = m.replace("/prints/", "");
+			if (!out[seg] || ts < out[seg]) out[seg] = ts;
+		}
+	}
+	return out;
+}
+
 const CREATE_POST = `
 	mutation($input: CreatePostInput!) {
 		createPost(input: $input) {
@@ -132,24 +163,48 @@ export function createPlugin(): ResolvedPlugin {
 					const result = await ctx.content.list("prints", { status: "published", limit: 200 });
 					const items = result.items ?? result.entries ?? result ?? [];
 					const shared = (await ctx.kv.get<Record<string, string>>("sharedMap")) ?? {};
-					return {
-						items: items
-							.map((e: any) => {
-								const d = e.data ?? e;
-								const id = e.id ?? d.slug ?? d.id;
-								return {
-									id,
-									title: d.title ?? "",
-									excerpt: d.source ? `Model from ${d.source}` : "",
-									slug: d.slug ?? e.id,
-									status: d.print_status ?? "done",
-									imageUrl: imageUrl(d.featured_image),
-									sharedAt: shared[id] ?? null,
-								};
-							})
-							// Only completed makes (queued prints have no photo).
-							.filter((p: any) => p.status === "done"),
-					};
+
+					// Retroactively detect shares that already exist in Buffer (by the
+					// /prints/<segment> link), so prints shared before/outside this plugin
+					// still get a ✓. Segment may be a slug or an internal id.
+					let bufferShares: Record<string, string> = {};
+					const token = await ctx.kv.get<string>("settings:bufferToken");
+					if (token) {
+						try {
+							bufferShares = await getBufferShares(ctx, token);
+						} catch (e) {
+							ctx.log?.warn?.(`Buffer sync skipped: ${(e as Error).message}`);
+						}
+					}
+
+					let dirty = false;
+					const out = items
+						.map((e: any) => {
+							const d = e.data ?? e;
+							const id = e.id ?? d.slug ?? d.id;
+							const slug = e.slug ?? d.slug ?? id;
+							const sharedAt =
+								shared[id] ?? bufferShares[slug] ?? bufferShares[id] ?? null;
+							// Persist a newly-detected Buffer share into our own map.
+							if (sharedAt && !shared[id]) {
+								shared[id] = sharedAt;
+								dirty = true;
+							}
+							return {
+								id,
+								title: d.title ?? "",
+								excerpt: d.source ? `Model from ${d.source}` : "",
+								slug,
+								status: d.print_status ?? "done",
+								imageUrl: imageUrl(d.featured_image),
+								sharedAt,
+							};
+						})
+						// Only completed makes (queued prints have no photo).
+						.filter((p: any) => p.status === "done");
+
+					if (dirty) await ctx.kv.set("sharedMap", shared);
+					return { items: out };
 				},
 			},
 
@@ -198,7 +253,8 @@ export function createPlugin(): ResolvedPlugin {
 					const d = entry.data ?? entry;
 
 					const base = await getSiteBaseUrl(ctx);
-					const link = `${base}/prints/${d.slug ?? entry.id}`;
+					const slug = entry.slug ?? d.slug ?? entry.id;
+					const link = `${base}/prints/${slug}`;
 					const caption = d.source ? `Model from ${d.source}` : "";
 					const text = [d.title, caption, link].filter(Boolean).join("\n\n");
 					const image = imageUrl(d.featured_image);
