@@ -29,8 +29,10 @@ const ogImage = 'https://mattmakes3d.com/assets/og-card.png';
 
   <link rel="stylesheet" href="/styles/global.css" />
 
-  <style is:global>
-    body {
+  <style>
+    /* Scoped to a wrapper (not `body`) so this page's dark backdrop can't
+       leak onto other routes through the shared SSR/dev style graph. */
+    .links-bg {
       padding: 32px 16px;
       background-color: #061027;
       background-image: radial-gradient(rgba(244, 120, 40, 0.10) 1px, transparent 1px);
@@ -46,12 +48,13 @@ const ogImage = 'https://mattmakes3d.com/assets/og-card.png';
     }
     /* On mobile, fill the viewport edge-to-edge */
     @media (max-width: 520px) {
-      body { padding: 0; }
+      .links-bg { padding: 0; }
       .links-page { border-radius: 0; box-shadow: none; min-height: 100vh; }
     }
   </style>
 </head>
 <body>
+  <div class="links-bg">
   <div class="links-page">
     <!-- ── HERO BANNER ────────────────────────────────────────── -->
     <div class="links-hero">
@@ -197,6 +200,7 @@ const ogImage = 'https://mattmakes3d.com/assets/og-card.png';
       <div class="links-footer-row">MATTMAKES3D.COM</div>
       <div class="links-footer-row sub">a side project by mattevanstech.com</div>
     </div>
+  </div>
   </div>
 </body>
 </html>

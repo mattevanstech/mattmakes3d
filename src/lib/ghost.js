@@ -1,107 +1,71 @@
 /**
- * Ghost Content API helper.
+ * Blog (Workshop Journal) data access.
  *
- * Fetches published blog posts from the headless Ghost instance at
- * GHOST_API_URL (https://mattmakes3d.digitalpress.blog). Read-only.
+ * Formerly backed by the Ghost Content API; now backed by EmDash (Cloudflare D1).
+ * Post bodies are Portable Text — the detail page renders them with EmDash's
+ * <PortableText> component (see blog/[slug].astro), so `content` is passed
+ * through instead of the old pre-rendered `html`.
  *
- * The Content API key is safe to expose at the edge (it's read-only and
- * scoped to published content), but we still treat it as an env var so we
- * don't commit it. Set GHOST_API_URL + GHOST_CONTENT_API_KEY in .env locally
- * and in Vercel project envs.
+ * Export names + shapes are otherwise unchanged from the Ghost helper.
  */
+import { getEmDashCollection, getEmDashEntry } from "emdash";
+import { mediaUrl } from "./notion.js";
 
-const GHOST_API_URL = import.meta.env.GHOST_API_URL;
-const GHOST_KEY     = import.meta.env.GHOST_CONTENT_API_KEY;
-const GHOST_VERSION = "v5.0"; // Accept-Version header
-
-const baseURL = GHOST_API_URL ? `${GHOST_API_URL.replace(/\/$/, '')}/ghost/api/content` : null;
-
-const HEADERS = {
-  'Accept-Version': GHOST_VERSION,
-};
-
-/**
- * Normalize a Ghost post object to a flat, predictable shape for our pages.
- */
-function normalize(p) {
-  return {
-    id:           p.id,
-    title:        p.title ?? '',
-    slug:         p.slug ?? '',
-    excerpt:      p.custom_excerpt || p.excerpt || '',
-    html:         p.html ?? '',
-    featureImage: p.feature_image ?? '',
-    featureImageAlt:     p.feature_image_alt ?? '',
-    featureImageCaption: p.feature_image_caption ?? '',
-    publishedAt:  p.published_at ?? '',
-    updatedAt:    p.updated_at ?? '',
-    readingTime:  p.reading_time ?? 0,
-    tags:         (p.tags ?? []).map(t => ({ id: t.id, name: t.name, slug: t.slug })),
-    primaryTag:   p.primary_tag ? { id: p.primary_tag.id, name: p.primary_tag.name, slug: p.primary_tag.slug } : null,
-    authors:      (p.authors ?? []).map(a => ({
-      id: a.id, name: a.name, slug: a.slug, profileImage: a.profile_image ?? '',
-    })),
-    primaryAuthor: p.primary_author ? {
-      id: p.primary_author.id,
-      name: p.primary_author.name,
-      slug: p.primary_author.slug,
-      profileImage: p.primary_author.profile_image ?? '',
-    } : null,
-    url:          p.url ?? '',  // Ghost canonical URL
-  };
+/** Rough reading time (~200 wpm) from Portable Text blocks. */
+function readingTime(blocks) {
+	if (!Array.isArray(blocks)) return 0;
+	let words = 0;
+	for (const b of blocks) {
+		for (const c of b?.children ?? []) {
+			if (typeof c?.text === "string") words += c.text.trim().split(/\s+/).filter(Boolean).length;
+		}
+	}
+	return Math.max(1, Math.round(words / 200));
 }
 
-/**
- * Fetch all published blog posts, newest first.
- * Returns [] if Ghost isn't configured or the request fails.
- */
-export async function getPosts({ limit = 'all' } = {}) {
-  if (!baseURL || !GHOST_KEY) return [];
-
-  const params = new URLSearchParams({
-    key: GHOST_KEY,
-    limit: String(limit),
-    include: 'tags,authors',
-    fields: 'id,title,slug,excerpt,custom_excerpt,feature_image,feature_image_alt,feature_image_caption,published_at,updated_at,reading_time,url',
-  });
-
-  try {
-    const res = await fetch(`${baseURL}/posts/?${params}`, { headers: HEADERS });
-    if (!res.ok) {
-      console.warn(`Ghost getPosts: ${res.status} ${res.statusText}`);
-      return [];
-    }
-    const data = await res.json();
-    return (data.posts ?? []).map(normalize);
-  } catch (err) {
-    console.warn(`Ghost getPosts threw: ${err.message}`);
-    return [];
-  }
+function primaryTagFrom(entry) {
+	const tags = entry.data.terms?.tag ?? [];
+	const t = tags[0];
+	return t ? { name: t.label, slug: t.slug } : null;
 }
 
-/**
- * Fetch a single post by slug, with full HTML body.
- * Returns null if not found or Ghost isn't configured.
- */
+function toPost(entry) {
+	const tags = (entry.data.terms?.tag ?? []).map((t) => ({ name: t.label, slug: t.slug }));
+	const byline = entry.data.byline ?? entry.data.bylines?.[0]?.byline ?? null;
+	return {
+		id: entry.data.id,
+		title: entry.data.title ?? "",
+		slug: entry.data.slug || entry.id,
+		excerpt: entry.data.excerpt ?? "",
+		content: entry.data.content ?? [],
+		featureImage: mediaUrl(entry.data.featured_image),
+		featureImageAlt: entry.data.featured_image?.alt ?? "",
+		featureImageCaption: "",
+		publishedAt: entry.data.publishedAt ? new Date(entry.data.publishedAt).toISOString() : "",
+		readingTime: readingTime(entry.data.content),
+		tags,
+		primaryTag: primaryTagFrom(entry),
+		primaryAuthor: byline
+			? { name: byline.displayName ?? "", profileImage: "" }
+			: null,
+	};
+}
+
+/** All published posts, newest first. */
+export async function getPosts() {
+	const { entries } = await getEmDashCollection("posts", {
+		status: "published",
+		limit: 500,
+		orderBy: { published_at: "desc" },
+	});
+	return entries
+		.map(toPost)
+		.sort((a, b) => (b.publishedAt || "").localeCompare(a.publishedAt || ""));
+}
+
+/** A single post by slug, with full Portable Text body. Null if not found. */
 export async function getPost(slug) {
-  if (!baseURL || !GHOST_KEY || !slug) return null;
-
-  const params = new URLSearchParams({
-    key: GHOST_KEY,
-    include: 'tags,authors',
-  });
-
-  try {
-    const res = await fetch(`${baseURL}/posts/slug/${encodeURIComponent(slug)}/?${params}`, { headers: HEADERS });
-    if (!res.ok) {
-      if (res.status !== 404) console.warn(`Ghost getPost(${slug}): ${res.status} ${res.statusText}`);
-      return null;
-    }
-    const data = await res.json();
-    const post = data.posts?.[0];
-    return post ? normalize(post) : null;
-  } catch (err) {
-    console.warn(`Ghost getPost(${slug}) threw: ${err.message}`);
-    return null;
-  }
+	if (!slug) return null;
+	const { entry } = await getEmDashEntry("posts", slug);
+	return entry ? toPost(entry) : null;
 }

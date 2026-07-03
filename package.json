@@ -1,13 +1,32 @@
 {
   "name": "mattmakes3d",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.2.0",
+  "emdash": {
+    "label": "MattMakes3D",
+    "seed": "seed/seed.json"
+  },
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "deploy": "astro build && wrangler deploy",
+    "typecheck": "astro check"
   },
   "dependencies": {
-    "astro": "^4.0.0"
+    "@astrojs/cloudflare": "^14.0.0",
+    "@astrojs/react": "^6.0.0",
+    "@emdash-cms/cloudflare": "^0.27.0",
+    "astro": "^7.0.0",
+    "emdash": "^0.27.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.7",
+    "@cloudflare/workers-types": "^4.20260305.1",
+    "turndown": "^7.2.4",
+    "typescript": "^5.6.0",
+    "wrangler": "^4.99.0"
   }
 }

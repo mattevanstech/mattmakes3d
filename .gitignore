@@ -5,6 +5,14 @@ node_modules/
 dist/
 .astro/
 
+# EmDash / Wrangler local state
+.wrangler/
+data.db
+uploads/
+.dev.vars
+.dev.vars.*
+emdash-env.d.ts
+
 # Environment variables — never commit these
 .env
 .env.local
@@ -16,3 +24,6 @@ Thumbs.db
 
 # Logs
 npm-debug.log*
+
+# Migration intermediate (regenerate via scripts/migrate-fetch.mjs)
+scripts/migration-data.json

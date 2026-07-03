@@ -13,31 +13,35 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet" />
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    /* Everything is scoped to `.notfound-root` (not `body`/`:root`/`*`) so this
+       page's styles can't leak onto other routes via the shared SSR style graph.
+       Fixed + inset:0 makes it cover the viewport regardless of body margins. */
+    .notfound-root, .notfound-root *, .notfound-root *::before, .notfound-root *::after {
+      box-sizing: border-box; margin: 0; padding: 0;
+    }
 
-    :root {
+    .notfound-root {
       --wrong: #b1ff00;
       --wrong-dark: #7ab800;
       --wrong-glow: rgba(177,255,0,0.15);
       --bg: #0a1a00;
       --text: #1a2e00;
-    }
 
-    body {
+      position: fixed;
+      inset: 0;
       background-color: var(--wrong);
       color: var(--text);
       font-family: 'IBM Plex Mono', monospace;
-      min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 2rem;
-      overflow: hidden;
+      overflow: auto;
     }
 
     /* Scanline overlay for printer-screen effect */
-    body::before {
+    .notfound-root::before {
       content: '';
       position: fixed;
       inset: 0;
@@ -214,6 +218,7 @@
   </style>
 </head>
 <body>
+  <div class="notfound-root">
   <div class="container">
 
     <!-- Printer LCD screen -->
@@ -256,6 +261,7 @@
 
     <p class="footer-note">ERR_404 · MATTMAKES3D · PRINT JOB CANCELLED</p>
 
+  </div>
   </div>
 </body>
 </html>

@@ -1,0 +1,72 @@
+{
+	"$schema": "https://emdashcms.com/seed.schema.json",
+	"version": "1",
+	"meta": {
+		"name": "MattMakes3D",
+		"description": "3D print log, workshop picks, and workshop journal",
+		"author": "Matt Evans"
+	},
+	"settings": {
+		"title": "MattMakes3D",
+		"tagline": "A running record of what's coming off the printer."
+	},
+	"collections": [
+		{
+			"slug": "prints",
+			"label": "Prints",
+			"labelSingular": "Print",
+			"supports": ["drafts", "revisions", "search", "seo"],
+			"fields": [
+				{ "slug": "title", "label": "Model Name", "type": "string", "required": true, "searchable": true },
+				{ "slug": "featured_image", "label": "Photo", "type": "image" },
+				{ "slug": "print_date", "label": "Print Date", "type": "datetime" },
+				{ "slug": "print_status", "label": "Print Status", "type": "string" },
+				{ "slug": "model_url", "label": "Model Source URL", "type": "string" },
+				{ "slug": "source", "label": "Source", "type": "string" },
+				{ "slug": "featured", "label": "Featured", "type": "boolean" },
+				{ "slug": "content", "label": "Notes", "type": "portableText", "searchable": true }
+			]
+		},
+		{
+			"slug": "deals",
+			"label": "Workshop Picks",
+			"labelSingular": "Workshop Pick",
+			"supports": ["drafts", "search", "seo"],
+			"fields": [
+				{ "slug": "title", "label": "Name", "type": "string", "required": true, "searchable": true },
+				{ "slug": "featured_image", "label": "Photo", "type": "image" },
+				{ "slug": "category", "label": "Category", "type": "string" },
+				{ "slug": "price", "label": "Price", "type": "number" },
+				{ "slug": "original_price", "label": "Original Price", "type": "number" },
+				{ "slug": "url", "label": "URL", "type": "string" },
+				{ "slug": "source", "label": "Source", "type": "string" },
+				{ "slug": "deal_status", "label": "Status", "type": "string" },
+				{ "slug": "my_take", "label": "My Take", "type": "text", "searchable": true },
+				{ "slug": "featured", "label": "Featured", "type": "boolean" }
+			]
+		},
+		{
+			"slug": "posts",
+			"label": "Workshop Journal",
+			"labelSingular": "Post",
+			"supports": ["drafts", "revisions", "search", "seo"],
+			"commentsEnabled": false,
+			"fields": [
+				{ "slug": "title", "label": "Title", "type": "string", "required": true, "searchable": true },
+				{ "slug": "featured_image", "label": "Featured Image", "type": "image" },
+				{ "slug": "excerpt", "label": "Excerpt", "type": "text" },
+				{ "slug": "content", "label": "Content", "type": "portableText", "searchable": true }
+			]
+		}
+	],
+	"taxonomies": [
+		{
+			"name": "tag",
+			"label": "Tags",
+			"labelSingular": "Tag",
+			"hierarchical": false,
+			"collections": ["posts"],
+			"terms": []
+		}
+	]
+}

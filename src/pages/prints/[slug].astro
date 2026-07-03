@@ -1,17 +1,11 @@
 ---
 // prints/[slug].astro — individual print page with per-print OG tags
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getPrints } from '../../lib/notion.js';
+import { getPrint } from '../../lib/notion.js';
 
-export async function getStaticPaths() {
-  const prints = await getPrints();
-  return prints.map(print => ({
-    params: { slug: print.slug },
-    props: { print },
-  }));
-}
-
-const { print } = Astro.props;
+const { slug } = Astro.params;
+const print = await getPrint(slug);
+if (!print) return Astro.redirect('/404');
 
 const formattedDate = print.date
   ? new Date(print.date).toLocaleDateString('en-US', {

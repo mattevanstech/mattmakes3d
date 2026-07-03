@@ -1,198 +1,104 @@
 /**
- * Notion API utility for fetching print log data.
- * Uses the Notion REST API directly (no SDK required).
+ * Print-log data access.
+ *
+ * Formerly backed by the Notion API; now backed by EmDash (Cloudflare D1).
+ * The exported function names + return shapes are unchanged so the pages and
+ * components that consume them didn't need to change.
  */
+import { getEmDashCollection, getEmDashEntry } from "emdash";
 
-/**
- * Convert a print title to a URL-safe slug.
- * Used consistently across all pages and components.
- */
+/** Convert a title to a URL-safe slug. Kept for components that still call it. */
 export function toSlug(title) {
-  return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+	return title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
-const NOTION_TOKEN = import.meta.env.NOTION_TOKEN;
-const DATABASE_ID = "31737eb9-8530-8036-b514-e688248e45fc";
-const NOTION_VERSION = "2022-06-28";
-
-/**
- * Shared helper to query the database with given filter + sort options.
- */
-async function queryDatabase(body) {
-  const url = `https://api.notion.com/v1/databases/${DATABASE_ID}/query`;
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${NOTION_TOKEN}`,
-      "Content-Type": "application/json",
-      "Notion-Version": NOTION_VERSION,
-    },
-    body: JSON.stringify(body),
-  });
-  if (!response.ok) {
-    throw new Error(`Notion API error: ${response.status} ${response.statusText}`);
-  }
-  return response.json();
+/** Resolve an EmDash image field (object) to a URL string for <img src>. */
+export function mediaUrl(img) {
+	if (!img) return "";
+	if (typeof img === "string") return img;
+	if (img.src) return img.src;
+	const key = img.meta?.storageKey ?? img.id;
+	return key ? `/_emdash/api/media/file/${key}` : "";
 }
 
-/**
- * Query the Notion database and return formatted print entries.
- * Only returns entries with Status = "Done", sorted by Print Date descending.
- */
+/** ISO datetime → "YYYY-MM-DD". */
+function toDate(v) {
+	if (!v) return "";
+	return (v instanceof Date ? v.toISOString() : String(v)).slice(0, 10);
+}
+
+function toPrint(e) {
+	return {
+		id: e.data.id,
+		title: e.data.title ?? "",
+		slug: e.data.slug || e.id,
+		date: toDate(e.data.print_date),
+		photo: mediaUrl(e.data.featured_image),
+		model_url: e.data.model_url ?? "",
+		model_source: e.data.source ?? "",
+		featured: !!e.data.featured,
+	};
+}
+
+async function allPrints() {
+	const { entries } = await getEmDashCollection("prints", {
+		status: "published",
+		limit: 500,
+	});
+	return entries;
+}
+
+/** Completed prints (Status = "Done"), newest first. */
 export async function getPrints() {
-  const url = `https://api.notion.com/v1/databases/${DATABASE_ID}/query`;
-
-  const body = {
-    filter: {
-      property: "Status",
-      status: {
-        equals: "Done",
-      },
-    },
-    sorts: [
-      {
-        property: "Print Date",
-        direction: "descending",
-      },
-    ],
-  };
-
-  const data = await queryDatabase(body);
-
-  return data.results.map((page) => {
-    const props = page.properties;
-
-    const title = props["Model Name"]?.title?.[0]?.plain_text ?? "";
-    const date = props["Print Date"]?.date?.start ?? "";
-    const slug = toSlug(title);
-
-    // Derive the canonical CDN photo URL from slug + date.
-    // All new uploads via the CDN upload tool follow this convention:
-    //   https://cdn.mattmakes3d.com/images/{slug}-{YYYY-MM-DD}.jpg
-    // Fall back to the Notion Photo field for any entries not yet migrated
-    // to the CDN (e.g. photos still hosted on the old makes.mattevanstech.com host).
-    let photo = "";
-    if (slug && date) {
-      photo = `https://cdn.mattmakes3d.com/images/${slug}-${date}.jpg`;
-    } else {
-      // Fallback: read directly from the Notion Photo field
-      const photoFiles = props.Photo?.files ?? [];
-      if (photoFiles.length > 0) {
-        const file = photoFiles[0];
-        photo = file.type === "external" ? file.external.url : (file.file?.url ?? "");
-      }
-    }
-
-    return {
-      id: page.id,
-      title,
-      slug,
-      date,
-      photo,
-      model_url: props["Model Source URL"]?.url ?? "",
-      model_source: props["Source"]?.rich_text?.[0]?.plain_text ?? "",
-      featured: props["Featured"]?.checkbox ?? false,
-    };
-  });
+	const entries = await allPrints();
+	return entries
+		.filter((e) => e.data.print_status === "done")
+		.map(toPrint)
+		.sort((a, b) => b.date.localeCompare(a.date));
 }
 
-// ── DEALS DATABASE ──────────────────────────────────────────────────────────
-// The deals page (/deals) pulls from a separate Notion database from prints.
-// Created on 2026-05-27 via the Notion MCP. Schema:
-//   Name (Title), Photo (Files), Category (Select), Price (Number $),
-//   Original Price (Number $), URL (URL), Source (Select), Status (Select),
-//   My Take (Rich text), Featured (Checkbox)
-const DEALS_DATABASE_ID = "632deb71-b945-4967-a8fe-93977d4b2e7d";
-
-/**
- * Query the deals database. Returns deals with Status = "Live", featured first,
- * then newest first. Returns [] if the DB ID hasn't been configured or the API
- * call fails (e.g., the integration hasn't been invited to the database yet).
- */
-export async function getDeals() {
-  if (!DEALS_DATABASE_ID) return [];
-
-  const url = `https://api.notion.com/v1/databases/${DEALS_DATABASE_ID}/query`;
-  const body = {
-    filter: {
-      property: "Status",
-      select: { equals: "Live" },
-    },
-    sorts: [
-      { property: "Featured",      direction: "descending" },
-      { timestamp: "created_time", direction: "descending" },
-    ],
-  };
-
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${NOTION_TOKEN}`,
-      "Content-Type": "application/json",
-      "Notion-Version": NOTION_VERSION,
-    },
-    body: JSON.stringify(body),
-  });
-  if (!response.ok) {
-    console.warn(`getDeals: Notion API ${response.status} ${response.statusText}`);
-    return [];
-  }
-  const data = await response.json();
-
-  return data.results.map((page) => {
-    const props = page.properties;
-
-    const title = props["Name"]?.title?.[0]?.plain_text ?? "";
-
-    let photo = "";
-    const photoFiles = props["Photo"]?.files ?? [];
-    if (photoFiles.length > 0) {
-      const file = photoFiles[0];
-      photo = file.type === "external" ? file.external.url : (file.file?.url ?? "");
-    }
-
-    return {
-      id: page.id,
-      title,
-      slug: toSlug(title),
-      photo,
-      category: props["Category"]?.select?.name ?? "",
-      price: props["Price"]?.number ?? null,
-      originalPrice: props["Original Price"]?.number ?? null,
-      url: props["URL"]?.url ?? "",
-      source: props["Source"]?.select?.name ?? "",
-      myTake: props["My Take"]?.rich_text?.map(r => r.plain_text).join("") ?? "",
-      featured: props["Featured"]?.checkbox ?? false,
-    };
-  });
+/** A single completed print by slug, or null. */
+export async function getPrint(slug) {
+	if (!slug) return null;
+	const { entry } = await getEmDashEntry("prints", slug);
+	return entry ? toPrint(entry) : null;
 }
 
-/**
- * Fetch items currently in the print queue (Status = "In Print Queue").
- */
+/** Items currently queued to print (Status = "In Print Queue"). */
 export async function getQueue() {
-  const data = await queryDatabase({
-    filter: {
-      property: "Status",
-      status: {
-        equals: "In Print Queue",
-      },
-    },
-    sorts: [
-      {
-        property: "Model Name",
-        direction: "ascending",
-      },
-    ],
-  });
+	const entries = await allPrints();
+	return entries
+		.filter((e) => e.data.print_status === "queued")
+		.map((e) => ({
+			id: e.data.id,
+			title: e.data.title ?? "",
+			url: e.data.model_url ?? "",
+			source: e.data.source ?? "",
+		}))
+		.sort((a, b) => a.title.localeCompare(b.title));
+}
 
-  return data.results.map((page) => {
-    const props = page.properties;
-    return {
-      id: page.id,
-      title: props["Model Name"]?.title?.[0]?.plain_text ?? "",
-      url: props["Model Source URL"]?.url ?? "",
-      source: props["Source"]?.rich_text?.[0]?.plain_text ?? "",
-    };
-  });
+/** Live workshop picks (deals). Featured first, then newest. */
+export async function getDeals() {
+	const { entries } = await getEmDashCollection("deals", {
+		status: "published",
+		limit: 500,
+		orderBy: { created_at: "desc" },
+	});
+	return entries
+		.filter((e) => (e.data.deal_status ?? "live") === "live")
+		.map((e) => ({
+			id: e.data.id,
+			title: e.data.title ?? "",
+			slug: e.data.slug || e.id,
+			photo: mediaUrl(e.data.featured_image),
+			category: e.data.category ?? "",
+			price: e.data.price ?? null,
+			originalPrice: e.data.original_price ?? null,
+			url: e.data.url ?? "",
+			source: e.data.source ?? "",
+			myTake: e.data.my_take ?? "",
+			featured: !!e.data.featured,
+		}))
+		.sort((a, b) => Number(b.featured) - Number(a.featured));
 }

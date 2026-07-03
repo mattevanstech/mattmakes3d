@@ -1,20 +1,12 @@
 ---
-// blog/[slug].astro — single blog post page rendered from Ghost HTML body.
+// blog/[slug].astro — single blog post page rendered from Portable Text (EmDash).
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getPosts, getPost } from '../../lib/ghost.js';
+import { PortableText } from 'emdash/ui';
+import { getPost } from '../../lib/ghost.js';
 
-export async function getStaticPaths() {
-  const posts = await getPosts();
-  return posts.map((post) => ({
-    params: { slug: post.slug },
-    props: { post },
-  }));
-}
-
-const { post } = Astro.props;
-
-// Re-fetch the full post for the HTML body (the index call only requested metadata).
-const full = await getPost(post.slug) ?? post;
+const { slug } = Astro.params;
+const full = await getPost(slug);
+if (!full) return Astro.redirect('/404');
 
 const formattedDate = full.publishedAt
   ? new Date(full.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -83,7 +75,7 @@ const ogDescription = full.excerpt || `${full.title} — read on MattMakes3D.com
     )}
 
     <!-- ── BODY ──────────────────────────────────────────────── -->
-    <div class="blog-post-body" set:html={full.html} />
+    <div class="blog-post-body"><PortableText value={full.content} /></div>
 
     <!-- ── FOOTER ────────────────────────────────────────────── -->
     <footer class="blog-post-footer">
