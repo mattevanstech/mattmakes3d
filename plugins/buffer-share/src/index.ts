@@ -199,6 +199,7 @@ export function createPlugin(): ResolvedPlugin {
 							return {
 								id,
 								title: d.title ?? "",
+								source: d.source ?? "",
 								excerpt: d.source ? `Model from ${d.source}` : "",
 								slug,
 								status: d.print_status ?? "done",
@@ -287,8 +288,10 @@ export function createPlugin(): ResolvedPlugin {
 					const base = await getSiteBaseUrl(ctx);
 					const slug = entry.slug ?? d.slug ?? entry.id;
 					const link = `${base}/prints/${slug}`;
-					const caption = d.source ? `Model from ${d.source}` : "";
-					const text = [d.title, caption, link].filter(Boolean).join("\n\n");
+					const intro = d.source
+						? `Check out this ${d.title} that I printed, model from ${d.source}.`
+						: `Check out this ${d.title} that I printed.`;
+					const text = `${intro}\n\n${link}`;
 					const image = imageUrl(d.featured_image);
 					const imageAbsolute = image.startsWith("http") ? image : `${base}${image}`;
 

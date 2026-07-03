@@ -21,6 +21,7 @@ function apiFetch(route: string, body?: unknown): Promise<Response> {
 interface Post {
 	id: string;
 	title: string;
+	source: string;
 	excerpt: string;
 	slug: string;
 	imageUrl: string;
@@ -88,7 +89,11 @@ function SharePage() {
 
 	const base = "https://mattmakes3d.com";
 	const previewText = selected
-		? [selected.title, selected.excerpt, `${base}/prints/${selected.slug}`].filter(Boolean).join("\n\n")
+		? `${
+				selected.source
+					? `Check out this ${selected.title} that I printed, model from ${selected.source}.`
+					: `Check out this ${selected.title} that I printed.`
+			}\n\n${base}/prints/${selected.slug}`
 		: "";
 
 	if (loading) return <div style={{ padding: 24 }}>Loading…</div>;
