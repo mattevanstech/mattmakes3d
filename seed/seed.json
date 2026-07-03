@@ -20,7 +20,7 @@
 				{ "slug": "title", "label": "Model Name", "type": "string", "required": true, "searchable": true },
 				{ "slug": "featured_image", "label": "Photo", "type": "image" },
 				{ "slug": "print_date", "label": "Print Date", "type": "datetime" },
-				{ "slug": "print_status", "label": "Print Status", "type": "string" },
+				{ "slug": "print_status", "label": "Print Status", "type": "select", "searchable": true, "validation": { "options": ["done", "queued"] } },
 				{ "slug": "model_url", "label": "Model Source URL", "type": "string" },
 				{ "slug": "source", "label": "Source", "type": "string" },
 				{ "slug": "featured", "label": "Featured", "type": "boolean" },

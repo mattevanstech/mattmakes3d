@@ -4,10 +4,12 @@
 	"main": "./src/worker.ts",
 	"compatibility_date": "2026-02-24",
 	"compatibility_flags": ["nodejs_compat"],
+	"workers_dev": true,
 	"d1_databases": [
 		{
 			"binding": "DB",
 			"database_name": "mattmakes3d-db",
+			"database_id": "ad954fb9-caea-4cad-8249-bade7f59cdf2",
 		},
 	],
 	"r2_buckets": [
@@ -15,5 +17,21 @@
 			"binding": "MEDIA",
 			"bucket_name": "mattmakes3d-media",
 		},
+	],
+	// EmDash/Astro session store. The id is filled in after:
+	//   npx wrangler kv namespace create SESSION
+	"kv_namespaces": [
+		{
+			"binding": "SESSION",
+			"id": "15c18297671b4ec2995d8184ecbb80c8",
+		},
+	],
+	// Cloudflare Images binding for Astro image optimization.
+	"images": {
+		"binding": "IMAGES",
+	},
+	// Serve the site on the apex domain (zone is on Cloudflare).
+	"routes": [
+		{ "pattern": "mattmakes3d.com", "custom_domain": true },
 	],
 }

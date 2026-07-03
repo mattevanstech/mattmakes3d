@@ -1,0 +1,61 @@
+diff --git a/node_modules/emdash/dist/astro/routes/api/auth/oauth/_provider_.mjs b/node_modules/emdash/dist/astro/routes/api/auth/oauth/_provider_.mjs
+index 4169c8f..e97ff9b 100644
+--- a/node_modules/emdash/dist/astro/routes/api/auth/oauth/_provider_.mjs
++++ b/node_modules/emdash/dist/astro/routes/api/auth/oauth/_provider_.mjs
+@@ -1,3 +1,4 @@
++import { env as __cfEnv } from "cloudflare:workers";
+ import { n as getPublicOrigin } from "../../../../../public-url-CTVqgMmg.mjs";
+ import { t as createOAuthStateStore } from "../../../../../oauth-state-store---zrApfB.mjs";
+ import { createAuthorizationUrl } from "@emdash-cms/auth";
+@@ -42,7 +43,7 @@ const GET = async ({ params, request, locals, redirect }) => {
+ 	if (!emdash?.db) return redirect(`${errorRedirectBase}?error=server_error&message=${encodeURIComponent("Database not configured")}`);
+ 	try {
+ 		const url = new URL(request.url);
+-		const providers = getOAuthConfig(locals.runtime?.env ?? import.meta.env);
++		const providers = getOAuthConfig(__cfEnv);
+ 		if (!providers[provider]) return redirect(`${errorRedirectBase}?error=provider_not_configured&message=${encodeURIComponent(`OAuth provider ${provider} is not configured. Set either EMDASH_OAUTH_${provider.toUpperCase()}_CLIENT_ID and EMDASH_OAUTH_${provider.toUpperCase()}_CLIENT_SECRET, or ${provider.toUpperCase()}_CLIENT_ID and ${provider.toUpperCase()}_CLIENT_SECRET.`)}`);
+ 		const { url: authUrl } = await createAuthorizationUrl({
+ 			baseUrl: `${getPublicOrigin(url, emdash?.config)}/_emdash`,
+diff --git a/node_modules/emdash/dist/astro/routes/api/auth/oauth/_provider_/callback.mjs b/node_modules/emdash/dist/astro/routes/api/auth/oauth/_provider_/callback.mjs
+index c545963..bf3d573 100644
+--- a/node_modules/emdash/dist/astro/routes/api/auth/oauth/_provider_/callback.mjs
++++ b/node_modules/emdash/dist/astro/routes/api/auth/oauth/_provider_/callback.mjs
+@@ -1,3 +1,4 @@
++import { env as __cfEnv } from "cloudflare:workers";
+ import { t as OptionsRepository } from "../../../../../../options-DTTML-Tx.mjs";
+ import { n as getPublicOrigin } from "../../../../../../public-url-CTVqgMmg.mjs";
+ import { t as finalizeSetup } from "../../../../../../setup-complete-gEiySUc-.mjs";
+@@ -53,7 +54,7 @@ const GET = async ({ params, request, locals, session, redirect }) => {
+ 	}
+ 	if (!code || !state) return redirect(`/_emdash/admin/login?error=invalid_callback&message=${encodeURIComponent("Missing code or state parameter")}`);
+ 	try {
+-		const providers = getOAuthConfig(locals.runtime?.env ?? import.meta.env);
++		const providers = getOAuthConfig(__cfEnv);
+ 		if (!providers[provider]) return redirect(`/_emdash/admin/login?error=provider_not_configured&message=${encodeURIComponent(`OAuth provider ${provider} is not configured`)}`);
+ 		const adapter = createKyselyAdapter(emdash.db);
+ 		const stateStore = createOAuthStateStore(emdash.db);
+diff --git a/node_modules/emdash/src/auth/providers/github-admin.tsx b/node_modules/emdash/src/auth/providers/github-admin.tsx
+index 79283bd..d66f3ad 100644
+--- a/node_modules/emdash/src/auth/providers/github-admin.tsx
++++ b/node_modules/emdash/src/auth/providers/github-admin.tsx
+@@ -16,12 +16,15 @@ function GitHubIcon({ className }: { className?: string }) {
+ }
+ 
+ export function LoginButton() {
++	// Use a full absolute URL (with origin) so the router-aware LinkButton treats
++	// it as external and navigates natively, instead of prepending the admin
++	// basename (which produced /_emdash/admin/_emdash/api/... → 404).
++	const href =
++		typeof window !== "undefined"
++			? `${window.location.origin}/_emdash/api/auth/oauth/github`
++			: "/_emdash/api/auth/oauth/github";
+ 	return (
+-		<LinkButton
+-			href="/_emdash/api/auth/oauth/github"
+-			variant="outline"
+-			className="w-full justify-center"
+-		>
++		<LinkButton href={href} variant="outline" className="w-full justify-center">
+ 			<GitHubIcon className="h-5 w-5" />
+ 			<span>GitHub</span>
+ 		</LinkButton>
