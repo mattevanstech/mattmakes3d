@@ -24,6 +24,7 @@ interface Post {
 	excerpt: string;
 	slug: string;
 	imageUrl: string;
+	sharedAt?: string | null;
 }
 
 function SharePage() {
@@ -72,8 +73,11 @@ function SharePage() {
 		setSharing(true);
 		setMessage(null);
 		try {
-			const res = parseApiResponse<{ shared: number }>(await apiFetch("share", { postId: selected.id }));
+			const res = parseApiResponse<{ shared: number; sharedAt: string }>(await apiFetch("share", { postId: selected.id }));
 			const r = await res;
+			// Mark it shared immediately (drives the ✓ without a reload).
+			setPosts((prev) => prev.map((p) => (p.id === selected.id ? { ...p, sharedAt: r.sharedAt } : p)));
+			setSelected((s) => (s ? { ...s, sharedAt: r.sharedAt } : s));
 			setMessage({ ok: true, text: `Queued to Buffer on ${r.shared} channel(s) — it'll post to X + Threads on your schedule.` });
 		} catch (e) {
 			setMessage({ ok: false, text: getErrorMessage(e) });
@@ -149,7 +153,17 @@ function SharePage() {
 									background: selected?.id === p.id ? "#eff6ff" : "#fff",
 								}}
 							>
-								<div style={{ fontWeight: 600 }}>{p.title}</div>
+								<div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+									{p.sharedAt && (
+										<span
+											title={`Shared to Buffer ${new Date(p.sharedAt).toLocaleString()}`}
+											style={{ color: "#16a34a", fontWeight: 700, flexShrink: 0 }}
+										>
+											✓
+										</span>
+									)}
+									<span style={{ fontWeight: 600 }}>{p.title}</span>
+								</div>
 								{p.excerpt && <div style={{ fontSize: 12, color: "#666", marginTop: 2 }}>{p.excerpt.slice(0, 80)}…</div>}
 							</button>
 						))}
@@ -168,6 +182,11 @@ function SharePage() {
 							)}
 							<div style={{ padding: 14 }}>
 								<pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", fontSize: 14, margin: 0 }}>{previewText}</pre>
+								{selected.sharedAt && (
+									<div style={{ marginTop: 10, fontSize: 12, color: "#16a34a" }}>
+										✓ Already shared {new Date(selected.sharedAt).toLocaleDateString()}
+									</div>
+								)}
 								<button
 									onClick={share}
 									disabled={sharing || !hasToken}
@@ -177,7 +196,7 @@ function SharePage() {
 										cursor: sharing || !hasToken ? "default" : "pointer",
 									}}
 								>
-									{sharing ? "Queueing…" : "Share to Buffer (X + Threads)"}
+									{sharing ? "Queueing…" : selected.sharedAt ? "Share again (X + Threads)" : "Share to Buffer (X + Threads)"}
 								</button>
 							</div>
 						</div>

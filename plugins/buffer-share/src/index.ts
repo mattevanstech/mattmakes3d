@@ -131,17 +131,20 @@ export function createPlugin(): ResolvedPlugin {
 				handler: async (ctx: Ctx) => {
 					const result = await ctx.content.list("prints", { status: "published", limit: 200 });
 					const items = result.items ?? result.entries ?? result ?? [];
+					const shared = (await ctx.kv.get<Record<string, string>>("sharedMap")) ?? {};
 					return {
 						items: items
 							.map((e: any) => {
 								const d = e.data ?? e;
+								const id = e.id ?? d.slug ?? d.id;
 								return {
-									id: e.id ?? d.slug ?? d.id,
+									id,
 									title: d.title ?? "",
 									excerpt: d.source ? `Model from ${d.source}` : "",
 									slug: d.slug ?? e.id,
 									status: d.print_status ?? "done",
 									imageUrl: imageUrl(d.featured_image),
+									sharedAt: shared[id] ?? null,
 								};
 							})
 							// Only completed makes (queued prints have no photo).
@@ -223,8 +226,14 @@ export function createPlugin(): ResolvedPlugin {
 						}
 						results.push({ channelId, id: payload?.post?.id });
 					}
-					ctx.log.info(`Shared post ${postId} to ${results.length} Buffer channel(s)`);
-					return { shared: results.length, results };
+					// Record that this print has been shared (drives the ✓ in the list).
+					const sharedAt = new Date().toISOString();
+					const shared = (await ctx.kv.get<Record<string, string>>("sharedMap")) ?? {};
+					shared[postId] = sharedAt;
+					await ctx.kv.set("sharedMap", shared);
+
+					ctx.log.info(`Shared print ${postId} to ${results.length} Buffer channel(s)`);
+					return { shared: results.length, results, sharedAt };
 				},
 			},
 		},
