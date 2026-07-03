@@ -157,6 +157,9 @@ export function createPlugin(): ResolvedPlugin {
 				siteBaseUrl: { type: "string", label: "Site URL (for post links)" },
 			},
 			pages: [{ path: "/", label: "Share to Buffer", icon: "share" }],
+			fieldWidgets: [
+				{ name: "share-button", label: "Share to Buffer", fieldTypes: ["json"] },
+			],
 		},
 
 		routes: {
