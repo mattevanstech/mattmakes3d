@@ -84,7 +84,7 @@ function SharePage() {
 
 	const base = "https://mattmakes3d.com";
 	const previewText = selected
-		? [selected.title, selected.excerpt, `${base}/blog/${selected.slug}`].filter(Boolean).join("\n\n")
+		? [selected.title, selected.excerpt, `${base}/prints/${selected.slug}`].filter(Boolean).join("\n\n")
 		: "";
 
 	if (loading) return <div style={{ padding: 24 }}>Loading…</div>;
@@ -93,7 +93,7 @@ function SharePage() {
 		<div style={{ padding: 24, maxWidth: 900 }}>
 			<h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 4 }}>Share to Buffer</h1>
 			<p style={{ color: "#666", marginBottom: 20 }}>
-				Pick a post and queue it to Buffer — it posts to your connected X and Threads channels.
+				Pick a print and queue it to Buffer — it posts to your connected X and Threads channels.
 			</p>
 
 			{!hasToken && (
@@ -136,7 +136,7 @@ function SharePage() {
 			<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
 				<div>
 					<h2 style={{ fontSize: 13, textTransform: "uppercase", letterSpacing: ".08em", color: "#888", marginBottom: 8 }}>
-						Posts
+						Prints
 					</h2>
 					<div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 480, overflowY: "auto" }}>
 						{posts.map((p) => (
@@ -153,7 +153,7 @@ function SharePage() {
 								{p.excerpt && <div style={{ fontSize: 12, color: "#666", marginTop: 2 }}>{p.excerpt.slice(0, 80)}…</div>}
 							</button>
 						))}
-						{posts.length === 0 && <div style={{ color: "#888" }}>No published posts.</div>}
+						{posts.length === 0 && <div style={{ color: "#888" }}>No prints yet.</div>}
 					</div>
 				</div>
 
@@ -182,7 +182,7 @@ function SharePage() {
 							</div>
 						</div>
 					) : (
-						<div style={{ color: "#888" }}>Select a post to preview.</div>
+						<div style={{ color: "#888" }}>Select a print to preview.</div>
 					)}
 				</div>
 			</div>

@@ -126,22 +126,26 @@ export function createPlugin(): ResolvedPlugin {
 		},
 
 		routes: {
-			// List published posts for the picker.
+			// List finished prints (Done, with a photo) for the picker.
 			posts: {
 				handler: async (ctx: Ctx) => {
-					const result = await ctx.content.list("posts", { status: "published", limit: 100 });
+					const result = await ctx.content.list("prints", { status: "published", limit: 200 });
 					const items = result.items ?? result.entries ?? result ?? [];
 					return {
-						items: items.map((e: any) => {
-							const d = e.data ?? e;
-							return {
-								id: e.id ?? d.slug ?? d.id,
-								title: d.title ?? "",
-								excerpt: d.excerpt ?? "",
-								slug: d.slug ?? e.id,
-								imageUrl: imageUrl(d.featured_image),
-							};
-						}),
+						items: items
+							.map((e: any) => {
+								const d = e.data ?? e;
+								return {
+									id: e.id ?? d.slug ?? d.id,
+									title: d.title ?? "",
+									excerpt: d.source ? `Model from ${d.source}` : "",
+									slug: d.slug ?? e.id,
+									status: d.print_status ?? "done",
+									imageUrl: imageUrl(d.featured_image),
+								};
+							})
+							// Only completed makes (queued prints have no photo).
+							.filter((p: any) => p.status === "done"),
 					};
 				},
 			},
@@ -186,13 +190,14 @@ export function createPlugin(): ResolvedPlugin {
 					const token = await getToken(ctx);
 					const { postId, channelIds } = ctx.input as { postId: string; channelIds?: string[] };
 
-					const entry = await ctx.content.get("posts", postId);
-					if (!entry) throw new Error(`Post not found: ${postId}`);
+					const entry = await ctx.content.get("prints", postId);
+					if (!entry) throw new Error(`Print not found: ${postId}`);
 					const d = entry.data ?? entry;
 
 					const base = await getSiteBaseUrl(ctx);
-					const link = `${base}/blog/${d.slug ?? entry.id}`;
-					const text = [d.title, d.excerpt, link].filter(Boolean).join("\n\n");
+					const link = `${base}/prints/${d.slug ?? entry.id}`;
+					const caption = d.source ? `Model from ${d.source}` : "";
+					const text = [d.title, caption, link].filter(Boolean).join("\n\n");
 					const image = imageUrl(d.featured_image);
 					const imageAbsolute = image.startsWith("http") ? image : `${base}${image}`;
 
