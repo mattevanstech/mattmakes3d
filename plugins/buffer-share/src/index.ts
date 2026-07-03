@@ -29,6 +29,9 @@ export function bufferSharePlugin(): PluginDescriptor {
 		capabilities: ["content:read", "media:read", "network:request"],
 		allowedHosts: ["api.buffer.com"],
 		adminPages: [{ path: "/", label: "Share to Buffer", icon: "share" }],
+		fieldWidgets: [
+			{ name: "share-button", label: "Share to Buffer", fieldTypes: ["json"] },
+		],
 		options: {},
 	};
 }
@@ -214,6 +217,32 @@ export function createPlugin(): ResolvedPlugin {
 					hasToken: !!(await ctx.kv.get<string>("settings:bufferToken")),
 					siteBaseUrl: (await ctx.kv.get<string>("settings:siteBaseUrl")) || "",
 				}),
+			},
+
+			// Shared state for a single print (used by the in-editor button).
+			"print-status": {
+				input: z.object({ postId: z.string() }),
+				handler: async (ctx: Ctx) => {
+					const { postId } = ctx.input as { postId: string };
+					const token = await ctx.kv.get<string>("settings:bufferToken");
+					const shared = (await ctx.kv.get<Record<string, string>>("sharedMap")) ?? {};
+					let sharedAt = shared[postId] ?? null;
+					if (token && !sharedAt) {
+						try {
+							const entry = await ctx.content.get("prints", postId);
+							const slug = entry?.slug ?? entry?.data?.slug ?? postId;
+							const bs = await getBufferShares(ctx, token);
+							sharedAt = bs[slug] ?? bs[postId] ?? null;
+							if (sharedAt) {
+								shared[postId] = sharedAt;
+								await ctx.kv.set("sharedMap", shared);
+							}
+						} catch (e) {
+							ctx.log?.warn?.(`print-status buffer check skipped: ${(e as Error).message}`);
+						}
+					}
+					return { hasToken: !!token, sharedAt };
+				},
 			},
 
 			// Save the Buffer API key (secret) + optional site URL.

@@ -24,7 +24,8 @@
 				{ "slug": "model_url", "label": "Model Source URL", "type": "string" },
 				{ "slug": "source", "label": "Source", "type": "string" },
 				{ "slug": "featured", "label": "Featured", "type": "boolean" },
-				{ "slug": "content", "label": "Notes", "type": "portableText", "searchable": true }
+				{ "slug": "content", "label": "Notes", "type": "portableText", "searchable": true },
+				{ "slug": "share_to_buffer", "label": "Share", "type": "json", "widget": "buffer-share:share-button" }
 			]
 		},
 		{

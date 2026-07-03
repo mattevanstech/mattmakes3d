@@ -209,6 +209,89 @@ function SharePage() {
 	);
 }
 
+/**
+ * In-editor "Share to Buffer" button (a field widget on the prints editor).
+ * Gets the print id from the editor URL (/_emdash/admin/content/prints/<id>).
+ */
+function ShareButtonWidget() {
+	const [postId, setPostId] = React.useState<string | null>(null);
+	const [hasToken, setHasToken] = React.useState(true);
+	const [sharedAt, setSharedAt] = React.useState<string | null>(null);
+	const [busy, setBusy] = React.useState(false);
+	const [msg, setMsg] = React.useState<{ ok: boolean; text: string } | null>(null);
+
+	React.useEffect(() => {
+		const id = window.location.pathname.match(/\/content\/prints\/([^/?#]+)/)?.[1] ?? null;
+		setPostId(id);
+		if (!id || id === "new") return;
+		(async () => {
+			try {
+				const st = await parseApiResponse<{ hasToken: boolean; sharedAt: string | null }>(
+					await apiFetch("print-status", { postId: id }),
+				);
+				setHasToken(st.hasToken);
+				setSharedAt(st.sharedAt);
+			} catch {
+				/* ignore — button still usable */
+			}
+		})();
+	}, []);
+
+	async function doShare() {
+		if (!postId) return;
+		setBusy(true);
+		setMsg(null);
+		try {
+			const r = await parseApiResponse<{ shared: number; sharedAt: string }>(
+				await apiFetch("share", { postId }),
+			);
+			setSharedAt(r.sharedAt);
+			setMsg({ ok: true, text: `Queued to Buffer on ${r.shared} channel(s).` });
+		} catch (e) {
+			setMsg({ ok: false, text: getErrorMessage(e) });
+		} finally {
+			setBusy(false);
+		}
+	}
+
+	if (!postId || postId === "new") {
+		return <div style={{ fontSize: 13, color: "#888" }}>Save the print first, then share it to Buffer.</div>;
+	}
+
+	return (
+		<div>
+			<button
+				onClick={doShare}
+				disabled={busy || !hasToken}
+				style={{
+					padding: "8px 16px", borderRadius: 8, border: "none", fontWeight: 600,
+					background: busy || !hasToken ? "#93c5fd" : "#2563eb", color: "#fff",
+					cursor: busy || !hasToken ? "default" : "pointer",
+				}}
+			>
+				{busy ? "Queueing…" : sharedAt ? "Share again to Buffer (X + Threads)" : "Share to Buffer (X + Threads)"}
+			</button>
+			{sharedAt && (
+				<span style={{ marginLeft: 10, fontSize: 12, color: "#16a34a" }}>
+					✓ Shared {new Date(sharedAt).toLocaleDateString()}
+				</span>
+			)}
+			{!hasToken && (
+				<div style={{ marginTop: 6, fontSize: 12, color: "#9a3412" }}>
+					Add your Buffer API key on the “Share to Buffer” page first.
+				</div>
+			)}
+			{msg && (
+				<div style={{ marginTop: 6, fontSize: 12, color: msg.ok ? "#16a34a" : "#991b1b" }}>{msg.text}</div>
+			)}
+		</div>
+	);
+}
+
 export const pages: PluginAdminExports["pages"] = {
 	"/": SharePage,
+};
+
+export const fields: PluginAdminExports["fields"] = {
+	"share-button": ShareButtonWidget,
 };
