@@ -187,6 +187,9 @@ function SharePage() {
 							)}
 							<div style={{ padding: 14 }}>
 								<pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", fontSize: 14, margin: 0 }}>{previewText}</pre>
+								<div style={{ marginTop: 8, fontSize: 12, color: "#888" }}>
+									X also gets <span style={{ color: "#2563eb" }}>#3dprinting #makers</span> (Threads stays clean)
+								</div>
 								{selected.sharedAt && (
 									<div style={{ marginTop: 10, fontSize: 12, color: "#16a34a" }}>
 										✓ Already shared {new Date(selected.sharedAt).toLocaleDateString()}

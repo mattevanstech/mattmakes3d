@@ -19,6 +19,9 @@ import { z } from "astro/zod";
 
 const BUFFER_GRAPHQL = "https://api.buffer.com";
 
+/** Hashtags appended on X (twitter) only — Threads gets the clean text. */
+const X_HASHTAGS = "#3dprinting #makers";
+
 // ─── Descriptor (imported in astro.config.mjs, runs at build time) ───────────
 export function bufferSharePlugin(): PluginDescriptor {
 	return {
@@ -295,27 +298,29 @@ export function createPlugin(): ResolvedPlugin {
 					const image = imageUrl(d.featured_image);
 					const imageAbsolute = image.startsWith("http") ? image : `${base}${image}`;
 
-					// Resolve targets: provided channel ids, else all connected X + Threads.
-					let targets = channelIds;
-					if (!targets?.length) {
-						targets = (await getChannels(ctx, token)).map((c) => c.id);
-					}
-					if (!targets?.length) throw new Error("No X/Threads channels connected in Buffer.");
+					// Resolve target channels (with service): provided ids, else all X + Threads.
+					const allChannels = await getChannels(ctx, token); // [{ id, service, name }]
+					const targetChannels = channelIds?.length
+						? allChannels.filter((c) => channelIds.includes(c.id))
+						: allChannels;
+					if (!targetChannels.length) throw new Error("No X/Threads channels connected in Buffer.");
 
 					// One createPost per channel — queue it (addToQueue) with an image asset.
+					// X (twitter) gets hashtags appended; Threads gets the clean text.
 					const assets = imageAbsolute ? [{ image: { url: imageAbsolute } }] : [];
 					const results = [];
-					for (const channelId of targets) {
+					for (const channel of targetChannels) {
+						const channelText = channel.service === "twitter" ? `${text}\n\n${X_HASHTAGS}` : text;
 						const data = await bufferGraphQL(ctx, token, CREATE_POST, {
 							// mode:addToQueue + schedulingType:automatic → Buffer queues it and
 							// auto-publishes to the channel on your posting schedule.
-							input: { channelId, text, assets, mode: "addToQueue", schedulingType: "automatic" },
+							input: { channelId: channel.id, text: channelText, assets, mode: "addToQueue", schedulingType: "automatic" },
 						});
 						const payload = data?.createPost;
 						if (payload?.__typename !== "PostActionSuccess") {
 							throw new Error(`Buffer rejected the post: ${payload?.message ?? payload?.__typename ?? "unknown error"}`);
 						}
-						results.push({ channelId, id: payload?.post?.id });
+						results.push({ channelId: channel.id, id: payload?.post?.id });
 					}
 					// Record that this print has been shared (drives the ✓ in the list).
 					const sharedAt = new Date().toISOString();
