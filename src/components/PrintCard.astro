@@ -15,19 +15,12 @@ const formattedDate = new Date(print.date).toLocaleDateString('en-US', {
 const slug = print.slug || toSlug(print.title);
 ---
 
-<div
+<a
+  href={`/prints/${slug}`}
   class:list={['make-card', { 'is-featured': featured }]}
-  data-lightbox
-  data-id={slug}
   data-title={print.title}
-  data-photo={print.photo}
-  data-date={print.date}
-  data-model-url={print.model_url}
-  data-model-source={print.model_source}
   data-title-lower={print.title.toLowerCase()}
   data-year={print.date.slice(0, 4)}
-  tabindex="0"
-  role="button"
   aria-label={`${print.title} — view details`}
 >
   <div class="make-card-photo">
@@ -52,4 +45,4 @@ const slug = print.slug || toSlug(print.title);
       )}
     </div>
   </div>
-</div>
+</a>

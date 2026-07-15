@@ -37,6 +37,7 @@ function toPrint(e) {
 		model_url: e.data.model_url ?? "",
 		model_source: e.data.source ?? "",
 		featured: !!e.data.featured,
+		notes: e.data.content ?? null,
 	};
 }
 

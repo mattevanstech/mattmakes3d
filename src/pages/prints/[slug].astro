@@ -1,11 +1,14 @@
 ---
 // prints/[slug].astro — individual print page with per-print OG tags
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { PortableText } from 'emdash/ui';
 import { getPrint } from '../../lib/notion.js';
 
 const { slug } = Astro.params;
 const print = await getPrint(slug);
 if (!print) return Astro.redirect('/404');
+
+const hasNotes = Array.isArray(print.notes) && print.notes.length > 0;
 
 const formattedDate = print.date
   ? new Date(print.date).toLocaleDateString('en-US', {
@@ -71,5 +74,45 @@ const ogImage = print.photo?.startsWith('http')
         </div>
       </div>
     </div>
+
+    {hasNotes && (
+      <section class="print-page-notes fade-up fade-up-2">
+        <span class="eyebrow">Notes</span>
+        <div class="print-page-notes-body">
+          <PortableText value={print.notes} />
+        </div>
+      </section>
+    )}
   </main>
 </BaseLayout>
+
+<style>
+  .print-page-notes {
+    max-width: 760px;
+    margin: 48px auto 0;
+    padding: 0 var(--pad-x, 24px);
+  }
+  .print-page-notes .eyebrow {
+    display: block;
+    margin-bottom: 12px;
+  }
+  .print-page-notes-body {
+    font-size: 17px;
+    line-height: 1.75;
+    color: var(--ink);
+  }
+  .print-page-notes-body :global(p) { margin: 0 0 1.1em; }
+  .print-page-notes-body :global(h2) { font-size: 1.4em; margin: 1.5em 0 0.5em; }
+  .print-page-notes-body :global(h3) { font-size: 1.15em; margin: 1.3em 0 0.4em; }
+  .print-page-notes-body :global(ul),
+  .print-page-notes-body :global(ol) { margin: 0 0 1.1em; padding-left: 1.4em; }
+  .print-page-notes-body :global(li) { margin: 0.3em 0; }
+  .print-page-notes-body :global(a) { color: var(--accent); text-decoration: underline; }
+  .print-page-notes-body :global(blockquote) {
+    margin: 1.2em 0;
+    padding-left: 16px;
+    border-left: 3px solid var(--accent);
+    color: var(--ink-2);
+  }
+  .print-page-notes-body :global(img) { max-width: 100%; height: auto; border-radius: 12px; }
+</style>
