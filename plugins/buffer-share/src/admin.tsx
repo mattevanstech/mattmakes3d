@@ -221,12 +221,21 @@ function SharePage() {
  * In-editor "Share to Buffer" button (a field widget on the prints editor).
  * Gets the print id from the editor URL (/_emdash/admin/content/prints/<id>).
  */
-function ShareButtonWidget() {
+function ShareButtonWidget(props: { value?: unknown; onChange?: (v: unknown) => void }) {
 	const [postId, setPostId] = React.useState<string | null>(null);
 	const [hasToken, setHasToken] = React.useState(true);
 	const [sharedAt, setSharedAt] = React.useState<string | null>(null);
 	const [busy, setBusy] = React.useState(false);
 	const [msg, setMsg] = React.useState<{ ok: boolean; text: string } | null>(null);
+
+	// This is a display-only widget (a button), but EmDash treats field widgets
+	// as controlled inputs — so ensure the field always has a valid value,
+	// otherwise the editor can't serialize it and Save silently does nothing.
+	React.useEffect(() => {
+		if (props?.onChange && (props.value === undefined || props.value === null)) {
+			props.onChange({});
+		}
+	}, []);
 
 	React.useEffect(() => {
 		const id = window.location.pathname.match(/\/content\/prints\/([^/?#]+)/)?.[1] ?? null;
