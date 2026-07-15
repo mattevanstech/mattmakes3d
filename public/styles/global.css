@@ -214,7 +214,7 @@ header.site-header {
   flex-shrink: 0;
 }
 .site-logo img {
-  height: 64px;
+  height: 52px;
   width: auto;
   transition: opacity 0.15s;
 }
