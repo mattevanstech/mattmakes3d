@@ -11,6 +11,13 @@
 			"database_name": "mattmakes3d-db",
 			"database_id": "ad954fb9-caea-4cad-8249-bade7f59cdf2",
 		},
+		{
+			// Traffic is reported into the Matt Evans Tech dashboard, which
+			// keeps every site on its own tab. Analytics rows only.
+			"binding": "ANALYTICS",
+			"database_name": "mattevanstech-db",
+			"database_id": "8492d6b5-bf29-496d-afab-438b9104de40",
+		},
 	],
 	"r2_buckets": [
 		{
