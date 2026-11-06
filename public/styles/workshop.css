@@ -1,0 +1,447 @@
+/* ─────────────────────────────────────────────────────────────────────
+   MattMakes3D — "The Workshop" (design layer)
+   Loaded AFTER global.css. Everything here is an override on top of the
+   existing token system, so removing the <link> in BaseLayout restores the
+   previous look exactly.
+
+   Principles (Apple HIG-inspired, translated for the web):
+     · Materials   translucent glass for chrome; depth conveys hierarchy
+     · Response    feedback on press (instant), springs on release
+     · Restraint   one accent, one grid, no gratuitous effects
+     · Access      reduced-motion / -transparency / contrast all honoured
+───────────────────────────────────────────────────────────────────── */
+
+/* ── MOTION TOKENS ─────────────────────────────────────────────────
+   A critically-damped spring (damping ratio 1.0, no overshoot), sampled into
+   CSS linear(). Falls back to an ease-out-expo cubic-bezier where linear()
+   isn't supported. */
+:root {
+  --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+}
+@supports (transition-timing-function: linear(0, 1)) {
+  :root {
+    --ease-spring: linear(0, 0.0355, 0.1175, 0.2202, 0.3277, 0.431, 0.5252, 0.6082, 0.6798, 0.7402, 0.7907, 0.8322, 0.8662, 0.8937, 0.9159, 0.9337, 0.9479, 0.9591, 0.968, 0.975, 0.9806, 0.9849, 0.9883, 0.9909, 0.993, 0.9946, 0.9958, 0.9968, 0.9975, 0.9981, 1);
+  }
+}
+
+/* ── THEME TOKENS ──────────────────────────────────────────────────
+   Light keeps the cream brand; dark is the Workshop (and the default). */
+:root,
+[data-theme='light'] {
+  --surface:            rgba(255, 255, 255, 0.72);
+  --surface-solid:      #FFFFFF;
+  --surface-border:     rgba(31, 45, 92, 0.09);
+  --surface-shadow:     0 1px 2px rgba(31, 45, 92, 0.06), 0 10px 24px -14px rgba(31, 45, 92, 0.28);
+  --surface-shadow-hi:  0 2px 4px rgba(31, 45, 92, 0.08), 0 26px 44px -20px rgba(31, 45, 92, 0.42);
+  --hl:                 inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  --hover-border:       rgba(244, 120, 40, 0.5);
+  --header-bg:          rgba(246, 241, 230, 0.7);
+  --menu-bg:            rgba(246, 241, 230, 0.92);
+  --edge:               rgba(31, 45, 92, 0.09);
+  --footer-bg:          var(--paper-2);
+  --bed-line:           rgba(31, 45, 92, 0.05);
+  --bed-glow:           rgba(244, 120, 40, 0.1);
+  --scrim:              rgba(10, 14, 29, 0.55);
+}
+
+[data-theme='dark'] {
+  --paper:              #0B1021;
+  --paper-hi:           #1B2347;
+  --paper-2:            #131A36;
+  --ink:                #F1ECDE;
+  --ink-2:              #A3AECF;
+  --accent:             #FF8A3D;
+  --accent-deep:        #F47828;
+  --rule:               rgba(241, 236, 222, 0.12);
+  --rule-soft:          rgba(241, 236, 222, 0.06);
+  --shadow:             rgba(0, 0, 0, 0.55);
+  --banner-bg:          #070B19;
+  /* White on #FF8A3D is only ~2.3:1. Deep ink on the orange is ~8:1. */
+  --on-accent:          #1A1205;
+
+  --surface:            rgba(24, 31, 60, 0.62);
+  --surface-solid:      #161D3B;
+  --surface-border:     rgba(255, 255, 255, 0.09);
+  --surface-shadow:     0 20px 44px -26px rgba(0, 0, 0, 0.7);
+  --surface-shadow-hi:  0 26px 54px -24px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 138, 61, 0.22), 0 10px 40px -10px rgba(255, 138, 61, 0.3);
+  --hl:                 inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --hover-border:       rgba(255, 138, 61, 0.45);
+  --header-bg:          rgba(11, 16, 33, 0.62);
+  --menu-bg:            rgba(11, 16, 33, 0.92);
+  --edge:               rgba(0, 0, 0, 0.35);
+  --footer-bg:          rgba(7, 11, 25, 0.6);
+  --bed-line:           rgba(255, 138, 61, 0.07);
+  --bed-glow:           rgba(255, 138, 61, 0.16);
+  --scrim:              rgba(5, 8, 18, 0.62);
+}
+
+/* ── THE PRINT BED ─────────────────────────────────────────────────
+   A fixed, fading grid + a warm glow behind the whole site. Fixed so it costs
+   nothing on scroll (compositor-only), and the content scrolls over it. */
+html { background: var(--paper); }
+body { background: transparent; }
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(1100px 520px at 82% -8%, var(--bed-glow), transparent 62%),
+    linear-gradient(var(--bed-line) 1px, transparent 1px) 0 0 / 48px 48px,
+    linear-gradient(90deg, var(--bed-line) 1px, transparent 1px) 0 0 / 48px 48px;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 48%, transparent 96%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 48%, transparent 96%);
+}
+
+::selection { background: rgba(255, 138, 61, 0.35); color: inherit; }
+
+/* Keyboard focus: one consistent, visible ring (the site had none). */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+/* ── TYPE ──────────────────────────────────────────────────────────
+   Display type tightens as it grows; balanced wrapping avoids orphans. */
+.hero h1 { letter-spacing: -0.04em; text-wrap: balance; }
+.hero h1 em { text-shadow: 0 0 56px rgba(255, 138, 61, 0.22); }
+[data-theme='light'] .hero h1 em { text-shadow: none; }
+.section-heading-title,
+.print-page-title,
+.blog-post-title,
+.blog-card-title { letter-spacing: -0.03em; text-wrap: balance; }
+.blog-post-title { letter-spacing: -0.035em; }
+.hero-sub, .about-prose p, .blog-post-body p { text-wrap: pretty; }
+
+/* ── HEADER: glass, with a soft scroll-edge instead of a hard divider ─ */
+header.site-header {
+  background: var(--header-bg);
+  -webkit-backdrop-filter: saturate(180%) blur(22px);
+  backdrop-filter: saturate(180%) blur(22px);
+  border-bottom: 1px solid transparent;
+  box-shadow: inset 0 -1px 0 var(--rule-soft);
+}
+header.site-header::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -20px;
+  height: 20px;
+  background: linear-gradient(180deg, var(--edge), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.site-header.is-scrolled { box-shadow: inset 0 -1px 0 var(--rule-soft); }
+.site-header.is-scrolled::after { opacity: 1; }
+
+/* A full panel of text is a bigger surface than the header bar, so it gets a
+   thicker material: same blur, much more opaque, so busy content can't bleed
+   through behind the links. */
+.mobile-nav {
+  background: var(--menu-bg);
+  -webkit-backdrop-filter: saturate(180%) blur(28px);
+  backdrop-filter: saturate(180%) blur(28px);
+}
+
+/* ── BUTTONS: respond on press, settle on a spring ─────────────────── */
+.btn {
+  transition:
+    transform 0.55s var(--ease-spring),
+    background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.35s var(--ease-spring);
+}
+.btn:active {
+  transform: scale(0.96);
+  transition-duration: 0.1s, 0.2s, 0.2s, 0.2s, 0.1s;
+  transition-timing-function: ease-out;
+}
+[data-theme='dark'] .btn-primary {
+  box-shadow: 0 0 0 1px rgba(255, 138, 61, 0.35), 0 12px 30px -8px rgba(255, 138, 61, 0.5);
+}
+[data-theme='dark'] .btn-primary:hover {
+  background: var(--accent);
+  filter: brightness(1.07);
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 1px rgba(255, 138, 61, 0.5), 0 16px 38px -8px rgba(255, 138, 61, 0.62);
+}
+[data-theme='dark'] .btn-outline {
+  border-color: rgba(241, 236, 222, 0.26);
+  background: rgba(255, 255, 255, 0.04);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+[data-theme='dark'] .btn-outline:hover { border-color: var(--ink); }
+
+/* ── HERO ──────────────────────────────────────────────────────────── */
+.hero-band {
+  position: relative;
+  border-bottom: none;
+  background-image: none;
+}
+.hero-band::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--rule) 20%, var(--rule) 80%, transparent);
+}
+
+/* ── GLASS SURFACES ────────────────────────────────────────────────── */
+.queue-panel,
+.facts-card,
+.contact-card {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  box-shadow: var(--surface-shadow), var(--hl);
+}
+.queue-panel {
+  position: relative;
+  border-radius: 22px;
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+}
+/* A thin warm light along the top edge — the panel catching the glow above it. */
+.queue-panel::before {
+  content: '';
+  position: absolute;
+  left: 22px;
+  right: 22px;
+  top: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 138, 61, 0.65), transparent);
+  opacity: 0.8;
+}
+[data-theme='light'] .queue-panel::before { opacity: 0.45; }
+.facts-card { border-radius: 20px; }
+.contact-card { border-style: dashed; border-color: var(--rule); box-shadow: none; background: transparent; }
+
+.queue-panel-item { border-radius: 10px; transition: background 0.2s; }
+.queue-panel-item:hover { background: var(--rule-soft); }
+.queue-panel-footer { border-radius: 12px; background: var(--rule-soft); }
+
+/* ── CARDS ─────────────────────────────────────────────────────────── */
+.make-card,
+.blog-card,
+.deal-card {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: 20px;
+  box-shadow: var(--surface-shadow), var(--hl);
+  transition:
+    transform 0.6s var(--ease-spring),
+    box-shadow 0.6s var(--ease-spring),
+    border-color 0.3s, background-color 0.3s;
+}
+.make-card:focus-visible,
+.blog-card:focus-visible,
+.deal-card:focus-visible {
+  transform: translateY(-6px);
+  border-color: var(--hover-border);
+  box-shadow: var(--surface-shadow-hi), var(--hl);
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+@media (hover: hover) {
+  .make-card:hover,
+  .blog-card:hover,
+  .deal-card:hover {
+    transform: translateY(-7px);
+    border-color: var(--hover-border);
+    box-shadow: var(--surface-shadow-hi), var(--hl);
+  }
+  .make-card:hover .make-card-photo img,
+  .blog-card:hover .blog-card-photo img,
+  .deal-card:hover .deal-card-photo img { transform: scale(1.06); }
+}
+/* Instant on press, so the card feels attached to the finger. */
+.make-card:active,
+.blog-card:active,
+.deal-card:active {
+  transform: translateY(-2px) scale(0.975);
+  transition-duration: 0.11s, 0.11s, 0.3s, 0.3s;
+  transition-timing-function: ease-out;
+}
+.make-card-photo img,
+.blog-card-photo img,
+.deal-card-photo img { transition: transform 0.7s var(--ease-spring); }
+
+.make-card-photo,
+.blog-card-photo,
+.deal-card-photo { background: var(--paper-2); }
+.make-card-body { padding: 14px 16px 16px; }
+
+.make-card-hover-pill {
+  background: rgba(10, 14, 29, 0.6);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  padding: 5px 11px;
+}
+.make-card-featured-badge {
+  box-shadow: 0 6px 18px -6px rgba(255, 138, 61, 0.7);
+}
+.blog-hero-wrap .blog-card.is-featured { border-radius: 24px; }
+
+/* ── ARCHIVE CONTROLS ──────────────────────────────────────────────── */
+.search-wrap,
+.view-toggle {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  box-shadow: var(--hl);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
+}
+.search-wrap { transition: border-color 0.2s, box-shadow 0.3s var(--ease-spring); }
+.search-wrap:focus-within {
+  border-color: var(--accent);
+  box-shadow: var(--hl), 0 0 0 4px rgba(255, 138, 61, 0.16);
+}
+.view-btn { transition: background-color 0.25s, color 0.25s, box-shadow 0.3s var(--ease-spring); }
+.view-btn:not(.active):hover { color: var(--accent); }
+.view-btn.active {
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: 0 6px 16px -6px rgba(255, 138, 61, 0.6);
+}
+.timeline-entry { border-radius: 14px; padding-left: 10px; padding-right: 10px; margin: 0 -10px; }
+.timeline-entry:hover { background: var(--surface); }
+.timeline-thumb { border-radius: 10px; }
+.timeline-entries { border-top-color: var(--rule-soft); }
+
+/* ── QUEUE PAGE ────────────────────────────────────────────────────── */
+.queue-list {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: 22px;
+  box-shadow: var(--surface-shadow), var(--hl);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
+}
+.queue-row { border-bottom-color: var(--rule-soft); }
+.queue-row:hover { background: var(--rule-soft); }
+.queue-row-num { background: var(--rule-soft); }
+
+/* ── ABOUT ─────────────────────────────────────────────────────────── */
+.about-avatar { border-radius: 22px; }
+[data-theme='dark'] .makerdeck-cta {
+  background: linear-gradient(135deg, #1D2755, #121A3A);
+  color: var(--ink);
+  border: 1px solid var(--surface-border);
+  box-shadow: var(--hl);
+}
+
+/* ── PRINT DETAIL ──────────────────────────────────────────────────── */
+.print-page-card {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: 24px;
+  box-shadow: var(--surface-shadow), var(--hl);
+}
+.print-page-info { border-left-color: var(--rule-soft); }
+.print-page-meta { border-bottom-color: var(--rule-soft); }
+
+/* Gallery controls float over arbitrary photos, so they're always dark glass
+   with light glyphs. (They were cream-on-cream in dark mode before.) */
+.print-gallery-nav {
+  background: rgba(10, 14, 29, 0.55);
+  color: #F6F1E6;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  backdrop-filter: blur(10px) saturate(160%);
+  transition: background-color 0.2s, transform 0.5s var(--ease-spring);
+}
+.print-gallery-nav:hover { background: rgba(10, 14, 29, 0.78); transform: translateY(-50%) scale(1.08); }
+.print-gallery-nav:active { transform: translateY(-50%) scale(0.94); transition-duration: 0.1s; }
+.print-gallery-dots {
+  background: rgba(10, 14, 29, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+/* ── BLOG POST ─────────────────────────────────────────────────────── */
+[data-theme='dark'] .blog-post-body pre {
+  background: #060A17;
+  color: var(--ink);
+  border: 1px solid var(--surface-border);
+}
+.blog-post-feature,
+.blog-post-body img { border-radius: 18px; }
+
+/* ── FOOTER ────────────────────────────────────────────────────────── */
+footer.site-footer {
+  position: relative;
+  background: var(--footer-bg);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border-top: none;
+}
+footer.site-footer::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--rule) 20%, var(--rule) 80%, transparent);
+}
+.footer-socials a:hover { box-shadow: 0 8px 18px -6px rgba(255, 138, 61, 0.6); }
+
+/* ── ENTRANCE ──────────────────────────────────────────────────────────
+   Same stagger as before, but easing out on the spring. */
+.fade-up { animation: fade-up 0.8s var(--ease-spring) forwards; }
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── ACCESSIBILITY ─────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  /* Not "no feedback" — a gentler, non-vestibular equivalent: no travel, just
+     a quick cross-fade. */
+  .fade-up { animation: none; opacity: 1; transform: none; }
+  .make-card, .blog-card, .deal-card, .btn, .print-gallery-nav, .queue-panel-item {
+    transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s, opacity 0.15s !important;
+  }
+  .make-card:hover, .blog-card:hover, .deal-card:hover,
+  .make-card:focus-visible, .blog-card:focus-visible, .deal-card:focus-visible,
+  .make-card:active, .blog-card:active, .deal-card:active,
+  .btn:hover, .btn:active { transform: none !important; }
+  .make-card-photo img, .blog-card-photo img, .deal-card-photo img { transition: none; }
+  .make-card:hover .make-card-photo img,
+  .blog-card:hover .blog-card-photo img,
+  .deal-card:hover .deal-card-photo img { transform: none; }
+}
+
+/* Frosted → solid. Same hierarchy, no translucency. */
+@media (prefers-reduced-transparency: reduce) {
+  :root, [data-theme='light'] { --header-bg: var(--paper); --menu-bg: var(--paper); --surface: var(--surface-solid); --footer-bg: var(--paper-2); }
+  [data-theme='dark'] { --header-bg: #0B1021; --menu-bg: #0B1021; --surface: #161D3B; --footer-bg: #070B19; }
+  header.site-header, .mobile-nav, .queue-panel, .queue-list, .search-wrap, .view-toggle,
+  footer.site-footer, .btn-outline, .make-card-hover-pill, .print-gallery-nav, .print-gallery-dots {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .print-gallery-nav, .print-gallery-dots, .make-card-hover-pill { background: #0A0E1D; }
+}
+
+/* More contrast: defined borders, no glow-only affordances. */
+@media (prefers-contrast: more) {
+  :root, [data-theme='light'] { --surface-border: rgba(31, 45, 92, 0.45); --rule: rgba(31, 45, 92, 0.4); }
+  [data-theme='dark'] { --surface-border: rgba(255, 255, 255, 0.4); --rule: rgba(241, 236, 222, 0.4); --ink-2: #C9D1EA; }
+  body::before { opacity: 0.4; }
+}
+
+@media print {
+  body::before, header.site-header::after { display: none; }
+}

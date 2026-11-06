@@ -156,22 +156,16 @@ button { font: inherit; cursor: pointer; }
   gap: 1rem 2rem;
   padding: 1rem 48px;
 }
-.network-bar-label {
-  font-family: var(--font-mono);
-  font-size: 0.6rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: rgba(255, 255, 255, 0.5);
+/* The logos and label are drawn by mattevanstech.com/menetwork.js inside its
+   own shadow root; these properties are the knobs it reads. */
+.menetwork {
+  flex: 1;
+  --menetwork-justify: flex-start;
+  --menetwork-gap: 2rem;
+  --menetwork-logo-height: 34px;
+  --menetwork-label-color: rgba(255, 255, 255, 0.5);
+  --menetwork-label-opacity: 1;
 }
-.network-site { display: inline-flex; align-items: center; }
-.network-site img {
-  height: 34px;
-  width: auto;
-  display: block;
-  transition: transform 0.15s;
-}
-.network-site:hover img { transform: translateY(-2px); }
 
 .site-logo-wrap {
   display: flex;
@@ -2631,7 +2625,7 @@ footer.site-footer {
   .site-logo img { height: 38px; }
   .site-header.is-scrolled .site-logo-wrap { transform: scale(0.7727); } /* 38px → ~29px */
   .network-bar-inner { padding: 0.9rem var(--pad-x-m); gap: 0.8rem 1.25rem; }
-  .network-site img { height: 28px; }
+  .menetwork { --menetwork-logo-height: 28px; --menetwork-gap: 1.25rem; }
   .site-nav-cluster { display: none; }
   .hamburger { display: flex; }
   .mobile-nav { display: flex; }
@@ -2748,13 +2742,12 @@ footer.site-footer {
   .notfound h1 { font-size: 52px; }
 }
 
-/* Same treatment as mattevanstech.com on phones: the label gets its own centered
-   line and the three logos sit in one centered row beneath it (rather than
-   wrapping unevenly, left-aligned). 26px keeps all three on one row at 360px. */
+/* Same treatment as mattevanstech.com on phones: menetwork puts the label on
+   its own centered line with the logos in one row beneath it. 22px keeps all
+   four logos on one row at 360px. */
 @media (max-width: 600px) {
   .network-bar-inner { justify-content: center; gap: 0.6rem 1rem; }
-  .network-bar-label { flex-basis: 100%; text-align: center; }
-  .network-site img { height: 26px; }
+  .menetwork { --menetwork-logo-height: 22px; --menetwork-gap: 1rem; }
 }
 
 @media (max-width: 480px) {

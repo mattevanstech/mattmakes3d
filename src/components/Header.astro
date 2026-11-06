@@ -11,16 +11,10 @@ const isActive = (id: string) => currentPage === id;
 <!-- Secret "my other sites" bar — drops down above the header via the chevron next to the logo -->
 <div class="network-bar" id="networkBar" aria-hidden="true">
   <div class="network-bar-inner">
-    <span class="network-bar-label">Also&nbsp;by&nbsp;Matt</span>
-    <a class="network-site" href="https://mattevanstech.com" target="_blank" rel="noopener noreferrer" title="Matt Evans Tech">
-      <img src="/assets/mattevanstech-logo.png" alt="Matt Evans Tech" />
-    </a>
-    <a class="network-site" href="https://unpluggedblog.com" target="_blank" rel="noopener noreferrer" title="Unplugged">
-      <img src="/assets/unplugged-logo.webp" alt="Unplugged" width="1352" height="353" />
-    </a>
-    <a class="network-site" href="https://tridenttracker.com" target="_blank" rel="noopener noreferrer" title="Trident Tracker">
-      <img src="/assets/tridenttracker-logo.png" alt="Trident Tracker" />
-    </a>
+    <!-- The logos come from mattevanstech.com/menetwork.js, which reads the one
+         list of Matt's sites (src/lib/menetwork.ts in mattevanstech-emdash).
+         This bar is dark in both themes, so it always takes the dark logos. -->
+    <div class="menetwork" data-menetwork="mattmakes3d" data-theme="dark"></div>
   </div>
 </div>
 

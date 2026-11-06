@@ -26,6 +26,10 @@ const {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- The "Also by Matt" bar's logos. The bar is redrawn on each page change
+       (it sits outside the persisted header), so fill it again every time. -->
+  <script is:inline src="https://mattevanstech.com/menetwork.js" defer></script>
+  <script is:inline>document.addEventListener('astro:page-load', () => window.menetwork && window.menetwork.render());</script>
   <title>{title}</title>
   <meta name="description" content={description} />
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png" />
