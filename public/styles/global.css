@@ -48,7 +48,7 @@
   --pad-x-m:      20px;
   --pad-y-d:      72px;
   --pad-y-m:      40px;
-  --hdr-h-m:      72px;
+  --hdr-h-m:      77px;   /* mobile header height − 1px, so the menu covers its bottom rule */
 }
 
 /* ── PAGE TRANSITIONS ──────────────────────────────────────────── */
@@ -121,13 +121,17 @@ button { font: inherit; cursor: pointer; }
   text-transform: uppercase;
   color: var(--accent);
 }
-.eyebrow::before {
+/* The eyebrow marker is a little 3D-printer hotend (replaces the old diamond).
+   mask + background:currentColor keeps it the eyebrow's accent color in both themes. */
+.eyebrow::before,
+.hero-eyebrow::before {
   content: '';
   display: inline-block;
-  width: 7px;
-  height: 7px;
+  width: 12px;
+  height: 15.75px;
   background: currentColor;
-  transform: rotate(45deg);
+  -webkit-mask: url('/assets/eyebrow-head.svg') center / contain no-repeat;
+  mask: url('/assets/eyebrow-head.svg') center / contain no-repeat;
   flex-shrink: 0;
 }
 
@@ -136,10 +140,12 @@ button { font: inherit; cursor: pointer; }
   overflow: hidden;
   max-height: 0;
   background: #141c18;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  /* Width 0 while collapsed: a border sits outside the content box, so a 1px
+     rule would still paint above the header even at max-height: 0. */
+  border-bottom: 0 solid rgba(255, 255, 255, 0.08);
   transition: max-height 0.32s ease;
 }
-.network-bar.open { max-height: 160px; }
+.network-bar.open { max-height: 160px; border-bottom-width: 1px; }
 .network-bar-inner {
   max-width: var(--max-w);
   margin: 0 auto;
@@ -171,6 +177,10 @@ button { font: inherit; cursor: pointer; }
   display: flex;
   align-items: center;
   flex-shrink: 0;
+  /* The logo and the chevron scale together as one group — see .is-scrolled below. */
+  transform-origin: left center;
+  transition: transform 0.22s ease;
+  will-change: transform;
 }
 .network-toggle {
   margin-left: 6px;
@@ -190,18 +200,23 @@ button { font: inherit; cursor: pointer; }
 
 /* ── HEADER ────────────────────────────────────────────────────── */
 header.site-header {
+  --h: 80px;      /* resting height */
+  --h-min: 49px;  /* condensed height */
   position: sticky;
   top: 0;
   z-index: 150;
+  height: var(--h);
   background: var(--paper);
   border-bottom: 1px solid var(--rule);
-  transition: background 0.2s, border-color 0.2s;
+  transition: height 0.22s ease, margin-bottom 0.22s ease,
+              background 0.2s, border-color 0.2s, box-shadow 0.22s ease;
 }
 
 .header-inner {
   max-width: var(--max-w);
   margin: 0 auto;
-  padding: 8px 48px;
+  height: 100%;
+  padding: 0 48px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -214,11 +229,24 @@ header.site-header {
   flex-shrink: 0;
 }
 .site-logo img {
-  height: 52px;
+  height: 44px;
   width: auto;
   transition: opacity 0.15s;
 }
 .site-logo:hover img { opacity: 0.82; }
+
+/* Condensed header — .is-scrolled is toggled by Header.astro past ~16px of scroll. */
+.site-header.is-scrolled {
+  height: var(--h-min);
+  /* Hold the flow footprint constant (height + margin === --h) so the page
+     content below never shifts as the header condenses. */
+  margin-bottom: calc(var(--h) - var(--h-min));
+  box-shadow: 0 2px 14px rgba(31, 45, 92, 0.10);
+}
+/* Scale the logo and chevron together as one group, so the chevron shrinks with
+   the logo instead of being left at full size. transform is compositor-only:
+   sub-pixel smooth, and it never re-lays-out the auto-width logo image. */
+.site-header.is-scrolled .site-logo-wrap { transform: scale(0.7308); } /* 44px → ~32px */
 .site-logo .logo-dark { display: none; }
 [data-theme='dark'] .site-logo .logo-light { display: none; }
 [data-theme='dark'] .site-logo .logo-dark  { display: block; }
@@ -288,8 +316,8 @@ header.site-header {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 1px solid var(--rule);
-  background: var(--paper);
+  border: 1px solid transparent;
+  background: transparent;
   color: var(--ink);
   display: inline-flex;
   align-items: center;
@@ -300,6 +328,11 @@ header.site-header {
 }
 .theme-toggle:hover { background: var(--paper-2); color: var(--accent); }
 .theme-toggle svg { width: 18px; height: 18px; }
+/* In the header, match the social icon buttons exactly (32px button / 16px glyph).
+   Scoped to .site-header so the mobile menu's toggle keeps its own scale — the
+   socials in there are 36px, not 32px. */
+.site-header .theme-toggle { width: 32px; height: 32px; }
+.site-header .theme-toggle svg { width: 16px; height: 16px; }
 .theme-toggle .icon-sun { display: none; }
 [data-theme='dark'] .theme-toggle .icon-sun  { display: block; }
 [data-theme='dark'] .theme-toggle .icon-moon { display: none; }
@@ -480,8 +513,8 @@ footer.site-footer {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 1px solid var(--rule);
-  background: var(--paper);
+  border: 1px solid transparent;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -494,6 +527,11 @@ footer.site-footer {
   border-color: var(--accent);
 }
 .footer-socials svg { width: 16px; height: 16px; fill: currentColor; }
+/* The icons are transparent, so the glyph — not the 36px tap target — is what the
+   eye lines up. Pull the row left by the inset ((36 − 16) / 2) so the first icon
+   sits flush with the logo above it; the hover circle still has its full size. */
+.footer-socials { margin-left: -10px; }
+.mobile-nav .theme-toggle { margin-left: -11px; } /* (40 − 18) / 2 */
 
 .footer-bottom {
   margin-top: 28px;
@@ -580,7 +618,10 @@ footer.site-footer {
   margin: 0 auto;
   padding: 72px 48px 60px;
   display: grid;
-  grid-template-columns: 1.4fr 1fr;
+  /* minmax(0, …) rather than bare fr: a bare fr track can't shrink below its
+     content's min-content width, so one long no-wrap queue title would prop the
+     column open and push the whole hero off-screen on phones. */
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
   gap: 56px;
   align-items: center;
 }
@@ -610,14 +651,6 @@ footer.site-footer {
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--accent);
-}
-.hero-eyebrow::before {
-  content: '';
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  background: currentColor;
-  transform: rotate(45deg);
 }
 .hero-sub {
   margin: 24px 0 0;
@@ -829,10 +862,11 @@ footer.site-footer {
 .make-card-featured-badge::before {
   content: '';
   display: inline-block;
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 10px;
   background: var(--on-accent);
-  transform: rotate(45deg);
+  -webkit-mask: url('/assets/eyebrow-head.svg') center / contain no-repeat;
+  mask: url('/assets/eyebrow-head.svg') center / contain no-repeat;
 }
 .make-card-hover-pill {
   position: absolute;
@@ -882,10 +916,11 @@ footer.site-footer {
 .make-card-meta::before {
   content: '';
   display: inline-block;
-  width: 5px;
-  height: 5px;
+  width: 8px;
+  height: 10px;
   background: var(--accent);
-  transform: rotate(45deg);
+  -webkit-mask: url('/assets/eyebrow-head.svg') center / contain no-repeat;
+  mask: url('/assets/eyebrow-head.svg') center / contain no-repeat;
   flex-shrink: 0;
 }
 .make-card-meta .sep { opacity: 0.4; }
@@ -990,10 +1025,11 @@ footer.site-footer {
 .blog-card-meta::before {
   content: '';
   display: inline-block;
-  width: 5px;
-  height: 5px;
+  width: 8px;
+  height: 10px;
   background: var(--accent);
-  transform: rotate(45deg);
+  -webkit-mask: url('/assets/eyebrow-head.svg') center / contain no-repeat;
+  mask: url('/assets/eyebrow-head.svg') center / contain no-repeat;
   margin-right: 4px;
   flex-shrink: 0;
 }
@@ -1555,10 +1591,11 @@ footer.site-footer {
 .timeline-month-header::before {
   content: '';
   display: block;
-  width: 9px;
-  height: 9px;
+  width: 11px;
+  height: 14px;
   background: var(--accent);
-  transform: rotate(45deg);
+  -webkit-mask: url('/assets/eyebrow-head.svg') left center / contain no-repeat;
+  mask: url('/assets/eyebrow-head.svg') left center / contain no-repeat;
   margin-bottom: 8px;
 }
 .timeline-month-name {
@@ -1653,10 +1690,11 @@ footer.site-footer {
 .no-results::before {
   content: '';
   display: inline-block;
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 13px;
   background: var(--accent);
-  transform: rotate(45deg);
+  -webkit-mask: url('/assets/eyebrow-head.svg') center / contain no-repeat;
+  mask: url('/assets/eyebrow-head.svg') center / contain no-repeat;
 }
 
 /* ── QUEUE PAGE ────────────────────────────────────────────────── */
@@ -1675,10 +1713,11 @@ footer.site-footer {
 .queue-count-row::before {
   content: '';
   display: inline-block;
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 13px;
   background: var(--accent);
-  transform: rotate(45deg);
+  -webkit-mask: url('/assets/eyebrow-head.svg') center / contain no-repeat;
+  mask: url('/assets/eyebrow-head.svg') center / contain no-repeat;
 }
 .queue-count-row strong {
   font-family: var(--font-display);
@@ -1984,6 +2023,68 @@ footer.site-footer {
   object-fit: cover;
   display: block;
 }
+
+/* Multi-photo carousel (only rendered when a print has more than one photo) */
+.print-gallery { position: relative; width: 100%; height: 100%; }
+.print-gallery-track {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.print-gallery-track::-webkit-scrollbar { display: none; }
+.print-gallery-slide { flex: 0 0 100%; height: 100%; scroll-snap-align: start; }
+.print-gallery-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.print-gallery-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(246, 241, 230, 0.82);
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  cursor: pointer;
+  z-index: 2;
+  backdrop-filter: blur(4px);
+  transition: background 0.15s, transform 0.15s;
+}
+.print-gallery-nav:hover { background: var(--paper-hi); transform: translateY(-50%) scale(1.06); }
+.print-gallery-nav.hide { display: none; }
+.print-gallery-nav.prev { left: 12px; }
+.print-gallery-nav.next { right: 12px; }
+.print-gallery-nav svg { width: 18px; height: 18px; }
+.print-gallery-dots {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 7px;
+  z-index: 2;
+  padding: 6px 8px;
+  border-radius: 999px;
+  background: rgba(31, 45, 92, 0.28);
+  backdrop-filter: blur(4px);
+}
+.print-gallery-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.55);
+  transition: background 0.15s, transform 0.15s;
+}
+.print-gallery-dot.active { background: #fff; transform: scale(1.3); }
 .print-page-info {
   padding: 40px;
   display: flex;
@@ -2311,23 +2412,21 @@ footer.site-footer {
 .links-cta {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   margin-top: 8px;
-  padding: 14px 16px;
+  padding: 18px 18px;
   border-radius: 12px;
-  background: var(--accent);
-  color: var(--on-accent);
+  background: var(--ink);
+  color: var(--paper, #F1ECDE);
   transition: background 0.18s, transform 0.18s, box-shadow 0.18s;
 }
 .links-cta:hover {
-  background: var(--accent-deep);
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(244,120,40,0.28);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.28);
 }
-.links-cta-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
+.links-cta-logo {
+  height: 30px;
+  width: auto;
   flex-shrink: 0;
 }
 .links-cta-body {
@@ -2337,21 +2436,14 @@ footer.site-footer {
   line-height: 1.15;
   min-width: 0;
 }
-.links-cta-title {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 16px;
-  letter-spacing: -0.01em;
-}
 .links-cta-sub {
-  margin-top: 3px;
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  opacity: 0.85;
+  opacity: 0.8;
 }
-.links-arrow { font-size: 18px; }
+.links-arrow { font-size: 18px; opacity: 0.9; }
 
 .links-section-label {
   display: flex;
@@ -2531,8 +2623,13 @@ footer.site-footer {
 
 /* ── RESPONSIVE ────────────────────────────────────────────────── */
 @media (max-width: 900px) {
-  .header-inner { padding: 14px var(--pad-x-m); }
-  .site-logo img { height: 44px; }
+  header.site-header { --h: 78px; --h-min: 53px; }
+  /* Once the header has condensed on scroll, the menu has to drop from its new,
+     shorter bottom edge — otherwise a strip of the page shows between the two. */
+  .site-header.is-scrolled ~ .mobile-nav { top: 52px; } /* --h-min − 1px */
+  .header-inner { padding: 0 var(--pad-x-m); }
+  .site-logo img { height: 38px; }
+  .site-header.is-scrolled .site-logo-wrap { transform: scale(0.7727); } /* 38px → ~29px */
   .network-bar-inner { padding: 0.9rem var(--pad-x-m); gap: 0.8rem 1.25rem; }
   .network-site img { height: 28px; }
   .site-nav-cluster { display: none; }
@@ -2573,7 +2670,7 @@ footer.site-footer {
   .site-section { padding: 40px var(--pad-x-m); }
   .hero-band-inner {
     padding: 40px var(--pad-x-m) 36px;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 32px;
   }
   .hero h1 { font-size: 56px; }
@@ -2649,6 +2746,15 @@ footer.site-footer {
 
   .notfound { padding: 64px var(--pad-x-m); }
   .notfound h1 { font-size: 52px; }
+}
+
+/* Same treatment as mattevanstech.com on phones: the label gets its own centered
+   line and the three logos sit in one centered row beneath it (rather than
+   wrapping unevenly, left-aligned). 26px keeps all three on one row at 360px. */
+@media (max-width: 600px) {
+  .network-bar-inner { justify-content: center; gap: 0.6rem 1rem; }
+  .network-bar-label { flex-basis: 100%; text-align: center; }
+  .network-site img { height: 26px; }
 }
 
 @media (max-width: 480px) {

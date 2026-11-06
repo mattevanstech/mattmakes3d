@@ -41,7 +41,30 @@ const ogImage = print.photo?.startsWith('http')
 
     <div class="print-page-card">
       <div class="print-page-photo">
-        {print.photo && <img src={print.photo} alt={print.title} />}
+        {print.photos.length > 1 ? (
+          <div class="print-gallery" data-gallery>
+            <div class="print-gallery-track" data-track>
+              {print.photos.map((src, i) => (
+                <div class="print-gallery-slide">
+                  <img src={src} alt={`${print.title} — photo ${i + 1} of ${print.photos.length}`} loading={i === 0 ? 'eager' : 'lazy'} />
+                </div>
+              ))}
+            </div>
+            <button class="print-gallery-nav prev hide" data-prev type="button" aria-label="Previous photo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button class="print-gallery-nav next" data-next type="button" aria-label="Next photo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            <div class="print-gallery-dots" data-dots>
+              {print.photos.map((_, i) => (
+                <button class="print-gallery-dot" data-dot type="button" aria-label={`Go to photo ${i + 1}`}></button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          print.photo && <img src={print.photo} alt={print.title} />
+        )}
       </div>
 
       <div class="print-page-info">
@@ -77,7 +100,7 @@ const ogImage = print.photo?.startsWith('http')
 
     {hasNotes && (
       <section class="print-page-notes fade-up fade-up-2">
-        <span class="eyebrow">Notes</span>
+        <span class="eyebrow">Maker Notes</span>
         <div class="print-page-notes-body">
           <PortableText value={print.notes} />
         </div>
@@ -116,3 +139,47 @@ const ogImage = print.photo?.startsWith('http')
   }
   .print-page-notes-body :global(img) { max-width: 100%; height: auto; border-radius: 12px; }
 </style>
+
+<script>
+  // Print photo carousel — arrows, dots, swipe (native scroll-snap), keyboard.
+  function initGalleries() {
+    document.querySelectorAll('[data-gallery]').forEach((g) => {
+      if ((g as HTMLElement).dataset.init) return;
+      (g as HTMLElement).dataset.init = '1';
+      const track = g.querySelector('[data-track]') as HTMLElement;
+      const dots = Array.from(g.querySelectorAll('[data-dot]'));
+      const prev = g.querySelector('[data-prev]');
+      const next = g.querySelector('[data-next]');
+      const count = g.querySelectorAll('.print-gallery-slide').length;
+      const indexOf = () => Math.round(track.scrollLeft / track.clientWidth);
+      // Instant scroll: a CSS smooth-scroll fights `scroll-snap-type: mandatory`
+      // (the snap yanks an in-flight animation back to the origin). Native touch
+      // swipe stays smooth via the browser's own momentum + snap. Clamped (no
+      // wrap) so the ends are hard stops.
+      const goTo = (i: number) => {
+        track.scrollLeft = Math.max(0, Math.min(count - 1, i)) * track.clientWidth;
+      };
+      const sync = () => {
+        const i = indexOf();
+        dots.forEach((d, k) => d.classList.toggle('active', k === i));
+        // No back button on the first photo, no next button on the last.
+        prev?.classList.toggle('hide', i <= 0);
+        next?.classList.toggle('hide', i >= count - 1);
+      };
+      const step = (n: number) => { goTo(indexOf() + n); sync(); };
+      prev?.addEventListener('click', () => step(-1));
+      next?.addEventListener('click', () => step(1));
+      dots.forEach((d, k) => d.addEventListener('click', () => { goTo(k); sync(); }));
+      // Direct sync (not rAF-wrapped) so dots/buttons also track native swipe reliably.
+      track.addEventListener('scroll', sync, { passive: true });
+      g.addEventListener('keydown', (e) => {
+        const ev = e as KeyboardEvent;
+        if (ev.key === 'ArrowLeft') { ev.preventDefault(); step(-1); }
+        if (ev.key === 'ArrowRight') { ev.preventDefault(); step(1); }
+      });
+      sync();
+    });
+  }
+  document.addEventListener('astro:page-load', initGalleries);
+  initGalleries();
+</script>

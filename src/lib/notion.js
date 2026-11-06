@@ -28,12 +28,26 @@ function toDate(v) {
 }
 
 function toPrint(e) {
+	// Featured photo first, then any extra gallery photos (photo_2..photo_5).
+	// `photo` (featured only) is what home/archive cards use; `photos` is the
+	// full gallery shown on the print detail page.
+	const photos = [
+		e.data.featured_image,
+		e.data.photo_2,
+		e.data.photo_3,
+		e.data.photo_4,
+		e.data.photo_5,
+	]
+		.map(mediaUrl)
+		.filter(Boolean);
+
 	return {
 		id: e.data.id,
 		title: e.data.title ?? "",
 		slug: e.data.slug || e.id,
 		date: toDate(e.data.print_date),
-		photo: mediaUrl(e.data.featured_image),
+		photo: photos[0] ?? "",
+		photos,
 		model_url: e.data.model_url ?? "",
 		model_source: e.data.source ?? "",
 		featured: !!e.data.featured,

@@ -19,6 +19,10 @@
 			"fields": [
 				{ "slug": "title", "label": "Model Name", "type": "string", "required": true, "searchable": true },
 				{ "slug": "featured_image", "label": "Photo", "type": "image" },
+				{ "slug": "photo_2", "label": "Photo 2", "type": "image" },
+				{ "slug": "photo_3", "label": "Photo 3", "type": "image" },
+				{ "slug": "photo_4", "label": "Photo 4", "type": "image" },
+				{ "slug": "photo_5", "label": "Photo 5", "type": "image" },
 				{ "slug": "print_date", "label": "Print Date", "type": "datetime" },
 				{ "slug": "print_status", "label": "Print Status", "type": "select", "searchable": true, "validation": { "options": ["done", "queued"] } },
 				{ "slug": "model_url", "label": "Model Source URL", "type": "string" },

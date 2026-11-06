@@ -1,7 +1,6 @@
 ---
 // BaseLayout.astro — wraps every page; handles <head>, header, MakerDeck bar, footer, lightbox
 import Header from '../components/Header.astro';
-import MakerDeckBar from '../components/MakerDeckBar.astro';
 import Footer from '../components/Footer.astro';
 import { ClientRouter } from 'astro:transitions';
 
@@ -35,9 +34,9 @@ const {
   <meta name="author" content="Matt Evans" />
   <link rel="canonical" href={`https://mattmakes3d.com${Astro.url.pathname}`} />
 
-  <!-- Theme color (browser chrome, iOS Safari, PWA) -->
-  <meta name="theme-color" content="#F6F1E6" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#0F1730" media="(prefers-color-scheme: dark)" />
+  <!-- Theme color (browser chrome, iOS Safari, PWA). Kept in sync with the chosen
+       theme by the bootstrap script below; defaults to the Workshop (dark). -->
+  <meta name="theme-color" content="#0B1021" />
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
@@ -63,19 +62,22 @@ const {
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500;1,6..72,600&display=swap" rel="stylesheet" />
 
   <link rel="stylesheet" href="/styles/global.css" />
+  <!-- The Workshop: design layer on top of global.css. Remove this line to revert. -->
+  <link rel="stylesheet" href="/styles/workshop.css" />
   <ClientRouter />
 
-  <!-- Theme bootstrap (no-FOUC): runs before paint and on every ViewTransitions navigation -->
+  <!-- Theme bootstrap (no-FOUC): runs before paint and on every ViewTransitions navigation.
+       Dark is the default; an explicit choice ('0' = light, '1' = dark) always wins. -->
   <script is:inline>
     (function () {
       function applyTheme() {
+        var dark = true;
         try {
-          var v = localStorage.getItem('mm3d-dark');
-          var dark = v === '1';
-          document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
-        } catch (_) {
-          document.documentElement.setAttribute('data-theme', 'light');
-        }
+          dark = localStorage.getItem('mm3d-dark') !== '0';
+        } catch (_) {}
+        document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+        var m = document.querySelector('meta[name="theme-color"]');
+        if (m) m.setAttribute('content', dark ? '#0B1021' : '#F6F1E6');
       }
       applyTheme();
       document.addEventListener('astro:after-swap', applyTheme);
@@ -107,7 +109,6 @@ const {
 </head>
 <body>
   <Header currentPage={currentPage} />
-  <MakerDeckBar />
 
   <slot />
 
